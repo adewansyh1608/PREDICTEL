@@ -1,0 +1,19 @@
+[theme]
+# Warna Utama (Tombol, Slider, Garis Fokus) - Sesuai warna Cyan di desain
+primaryColor = "#00A3E0"
+
+# Warna Background Utama (Halaman Kanan) - Putih
+backgroundColor = "#FFFFFF"
+
+# Warna Background Sidebar (Halaman Kiri) - Biru Tua Sesuai Desain
+secondaryBackgroundColor = "#004F8C"
+
+# Warna Teks Utama (Di halaman putih)
+textColor = "#262730"
+
+# Font
+font = "sans serif"
+
+[server]
+# Menghilangkan menu hamburger standar di pojok kanan atas agar lebih bersih
+headless = true
