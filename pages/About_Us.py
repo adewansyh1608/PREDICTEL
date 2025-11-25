@@ -2,7 +2,7 @@ import streamlit as st
 from pathlib import Path
 from style import inject_global_style, render_sidebar
 
-
+# 1. Konfigurasi Halaman
 st.set_page_config(
     page_title="About Us - PREDICTEL",
     page_icon="👥",
@@ -12,7 +12,7 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("About Us")
 
-
+# 2. Custom CSS (Meniru Desain image_5584b9.png)
 st.markdown("""
 <style>
     /* Styling Header Utama (ABOUT US) */
@@ -68,10 +68,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
+# 3. Judul Halaman
 st.markdown('<div class="about-header">ABOUT US</div>', unsafe_allow_html=True)
 
-
+# 4. Data Anggota Kelompok + path foto
 base_dir = Path(__file__).resolve().parent.parent
 image_dir = base_dir / "image"
 
@@ -83,20 +83,20 @@ team_members = [
     },
     {
         "name": "Muhammad Afiq Jakhel",
-        "nim": "2311523011",  
+        "nim": "231152XXXX",  # Silakan edit NIM ini
         "photo": image_dir / "afiq.jpg",
     },
     {
         "name": "Ihsannurais Pardika",
-        "nim": "2311523031",  
+        "nim": "231152XXXX",  # Silakan edit NIM ini
         "photo": image_dir / "ihsan.jpg",
     },
 ]
 
-
+# 5. Membuat Layout Grid (3 Kolom)
 cols = st.columns(3)
 
-
+# 6. Loop untuk menampilkan kartu
 for i, member in enumerate(team_members):
     with cols[i]:
         photo_placeholder = None
@@ -119,7 +119,7 @@ for i, member in enumerate(team_members):
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-
+# Footer Opsional
 st.markdown("<br><br><br>", unsafe_allow_html=True)
 st.markdown(
     "<div style='text-align: center; color: grey; font-size: 0.8rem;'>"

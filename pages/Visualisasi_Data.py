@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 from style import inject_global_style, render_sidebar
 
-
+# 1. Konfigurasi Halaman
 st.set_page_config(
     page_title="Data Visualization - PREDICTEL",
     page_icon="📊",
@@ -15,7 +15,7 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Data Visualization")
 
-
+# 2. Custom CSS (Meniru Desain image_5584d5.png)
 st.markdown("""
 <style>
     /* Styling Header Utama (DATA VISUALIZATION) */
@@ -62,44 +62,46 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
+# 3. Judul Halaman Sesuai Desain
 st.markdown('<div class="main-header">DATA VISUALIZATION</div>', unsafe_allow_html=True)
 
-
+# Cek Data
 if "data" not in st.session_state or st.session_state.data is None:
     st.warning("⚠️ Data belum tersedia. Silakan unggah file CSV di menu **Input Data** terlebih dahulu.")
     st.stop()
 
-
+# Gunakan data asli (raw) jika ada, agar labelnya terbaca (misal: "Male" bukan "1")
 df = st.session_state.data
 
-
+# 4. Pilihan Jenis Visualisasi (Dropdown Paling Atas)
 viz_type = st.selectbox(
     "Pilih Tipe Visualisasi", 
     ["Visualisasi Numerik", "Visualisasi Kategorikal", "Distribusi Churn"]
 )
 
-
+# ==============================================================================
+# OPSI 1: VISUALISASI NUMERIK (Sesuai Gambar Referensi)
+# ==============================================================================
 if viz_type == "Visualisasi Numerik":
     st.markdown('<div class="sub-header">VISUALISASI NUMERIK</div>', unsafe_allow_html=True)
     
-
+    # Filter hanya kolom numerik
     numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
     
-
+    # Layout 2 Kolom: Kiri (Kontrol), Kanan (Grafik)
     col_controls, col_graph = st.columns([1, 2])
     
     with col_controls:
-
+        # Widget Sesuai Gambar
         x_axis = st.selectbox("Pilih Kolom untuk Sumbu X", numeric_cols, index=0)
         
-        
+        # Logic agar Sumbu Y defaultnya beda dengan Sumbu X
         default_y_index = 1 if len(numeric_cols) > 1 else 0
         y_axis = st.selectbox("Pilih Kolom untuk Sumbu Y", numeric_cols, index=default_y_index)
         
         st.markdown("**Pilih Jenis Grafik**")
         chart_type = st.radio(
-            "Jenis Grafik", 
+            "Jenis Grafik", # Label hidden via CSS trick or args if supported
             ["Scatter Plot", "Bar Chart", "Line Chart"],
             label_visibility="collapsed"
         )
@@ -109,13 +111,13 @@ if viz_type == "Visualisasi Numerik":
 
     with col_graph:
         if show_btn:
-            
+            # Container Grafik
             st.markdown("### Result Graph")
             
             fig, ax = plt.subplots(figsize=(10, 6))
             
-        
-            custom_palette = ["#00A3E0", "#FF6B6B"]
+            # Warna Custom
+            custom_palette = ["#00A3E0", "#FF6B6B"] # Biru & Merah
             
             try:
                 # Cek apakah kolom Churn ada untuk pewarnaan (Hue)
@@ -139,16 +141,18 @@ if viz_type == "Visualisasi Numerik":
                 st.error(f"Gagal membuat grafik: {e}")
                 st.info("Tips: Pastikan kolom yang dipilih berisi angka valid.")
         else:
-            
+            # Placeholder jika tombol belum ditekan
             st.info("👈 Silakan pilih kolom dan tekan tombol **'Show Graph'** di sebelah kiri.")
 
-
+# ==============================================================================
+# OPSI 2: VISUALISASI KATEGORIKAL (Tambahan Penting untuk Churn)
+# ==============================================================================
 elif viz_type == "Visualisasi Kategorikal":
     st.markdown('<div class="sub-header">VISUALISASI KATEGORIKAL</div>', unsafe_allow_html=True)
     
-    
+    # Filter kolom kategorik (Object)
     cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
-    
+    # Hapus Churn dari daftar X karena Churn biasanya jadi pembanding (Hue)
     if 'Churn' in cat_cols:
         cat_cols.remove('Churn')
         
@@ -163,17 +167,21 @@ elif viz_type == "Visualisasi Kategorikal":
         if show_cat_btn:
             fig, ax = plt.subplots(figsize=(10, 5))
             
-            
+            # Countplot sangat cocok untuk melihat sebaran Churn per Kategori
             sns.countplot(data=df, x=selected_cat, hue='Churn', palette=["#22C55E", "#EF4444"], ax=ax)
             
             ax.set_title(f"Distribusi Churn berdasarkan {selected_cat}", fontweight='bold')
             ax.set_ylabel("Jumlah Pelanggan")
             
+            # Tambahkan label angka di atas batang
             for container in ax.containers:
                 ax.bar_label(container)
                 
             st.pyplot(fig)
 
+# ==============================================================================
+# OPSI 3: DISTRIBUSI CHURN (Insight Utama)
+# ==============================================================================
 elif viz_type == "Distribusi Churn":
     st.markdown('<div class="sub-header">PERSENTASE CHURN GLOBAL</div>', unsafe_allow_html=True)
     
@@ -181,6 +189,7 @@ elif viz_type == "Distribusi Churn":
         col_pie, col_stats = st.columns([1, 1])
         
         with col_pie:
+            # Pie Chart
             fig, ax = plt.subplots()
             churn_counts = df['Churn'].value_counts()
             ax.pie(churn_counts, labels=churn_counts.index, autopct='%1.1f%%', 
