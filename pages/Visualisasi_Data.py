@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import seaborn as sns 
 import numpy as np
 from style import inject_global_style, render_sidebar
 
