@@ -145,7 +145,7 @@ def render_sidebar(active_page: str) -> None:
             "About Us",
         ]
 
-        # Tentukan index aktif berdasarkan nama halaman saat ini
+        
         try:
             current_index = menu_items.index(active_page)
         except ValueError:

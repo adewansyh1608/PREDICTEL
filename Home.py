@@ -2,7 +2,6 @@ import streamlit as st
 from PIL import Image
 from style import inject_global_style, render_sidebar
 
-# 1. Konfigurasi Halaman
 st.set_page_config(
     page_title="PREDICTEL - Sistem Prediksi Churn",
     page_icon="📡",
@@ -12,8 +11,7 @@ st.set_page_config(
 
 inject_global_style()
 
-# 2. CSS CUSTOM: MEMPERBAIKI WARNA SIDEBAR & HEADER
-# Ini akan menimpa style bawaan agar sesuai persis dengan gambar desain
+
 st.markdown("""
 <style>
     /* =========================================
@@ -115,10 +113,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 3. KONTEN SIDEBAR (Logo PREDICTEL Custom)
 render_sidebar("Home")
 
-# 4. KONTEN HALAMAN UTAMA (HERO SECTION)
 st.markdown("""
 <div class="hero-container">
     <div class="hero-title">SISTEM PREDIKSI CUSTOMER CHURN</div>
@@ -130,16 +126,14 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Tombol Navigasi (Trik Layout agar tombol ada di kanan bawah banner)
 col_spacer, col_button = st.columns([4, 1])
 with col_button:
     if st.button("🚀 Mulai Input Data", type="primary", use_container_width=True):
         st.switch_page("pages/Input_Data.py")
 
-# 5. BAGIAN KARTU INFO
+
 col1, col2 = st.columns(2)
 
-# Kartu Cara Kerja
 with col1:
     st.markdown("""
     <div class="info-card">
@@ -155,7 +149,7 @@ with col1:
     </div>
     """, unsafe_allow_html=True)
 
-# Kartu Tentang Sistem
+
 with col2:
     st.markdown("""
     <div class="info-card">
