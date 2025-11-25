@@ -2,6 +2,7 @@ import streamlit as st
 from pathlib import Path
 from style import inject_global_style, render_sidebar
 
+
 st.set_page_config(
     page_title="About Us - PREDICTEL",
     page_icon="👥",
@@ -10,6 +11,7 @@ st.set_page_config(
 
 inject_global_style()
 render_sidebar("About Us")
+
 
 st.markdown("""
 <style>
@@ -66,7 +68,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 st.markdown('<div class="about-header">ABOUT US</div>', unsafe_allow_html=True)
+
 
 base_dir = Path(__file__).resolve().parent.parent
 image_dir = base_dir / "image"
@@ -84,12 +88,14 @@ team_members = [
     },
     {
         "name": "Ihsannurais Pardika",
-        "nim": "2311523031", 
+        "nim": "2311523031",  
         "photo": image_dir / "ihsan.jpg",
     },
 ]
 
+
 cols = st.columns(3)
+
 
 for i, member in enumerate(team_members):
     with cols[i]:
@@ -112,6 +118,7 @@ for i, member in enumerate(team_members):
         st.markdown(f"<div class='member-nim'>{member['nim']}</div>", unsafe_allow_html=True)
 
         st.markdown("</div>", unsafe_allow_html=True)
+
 
 st.markdown("<br><br><br>", unsafe_allow_html=True)
 st.markdown(

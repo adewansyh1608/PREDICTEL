@@ -3,6 +3,7 @@ import pandas as pd
 import time
 from style import inject_global_style, render_sidebar
 
+
 st.set_page_config(
     page_title="Input Data - PREDICTEL",
     page_icon="📂",
@@ -12,11 +13,13 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Input Data")
 
+
 if "data" not in st.session_state:
     st.session_state.data = None
 
 if "uploaded_file_name" not in st.session_state:
     st.session_state.uploaded_file_name = None
+
 
 st.markdown("""
 <style>
@@ -79,9 +82,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 st.title("Input Data")
 
+
 st.markdown('<div class="upload-container">', unsafe_allow_html=True)
+
 
 st.markdown("### 📂")
 st.markdown("**Drag and drop CSV file here**")
@@ -102,7 +108,7 @@ if uploaded_file is not None:
         
         df = pd.read_csv(uploaded_file)
         
-       
+        
         st.session_state.data = df
         st.session_state.uploaded_file_name = uploaded_file.name
         
@@ -112,24 +118,25 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"Terjadi kesalahan saat membaca file: {e}")
 
-st.markdown("---")
+
+st.markdown("---") 
 
 
 if st.session_state.data is not None:
     st.markdown('<div class="preview-container">', unsafe_allow_html=True)
     st.subheader(f"Data Preview: {st.session_state.uploaded_file_name}")
     
-   
+
     col1, col2 = st.columns(2)
     with col1:
         st.info(f"Jumlah Baris: **{st.session_state.data.shape[0]}**")
     with col2:
         st.info(f"Jumlah Kolom: **{st.session_state.data.shape[1]}**")
     
-    
+
     st.dataframe(st.session_state.data, use_container_width=True)
     
-    
+
     if st.button("🗑️ Hapus Data"):
         st.session_state.data = None
         st.session_state.uploaded_file_name = None
@@ -143,6 +150,7 @@ else:
 
     st.markdown('<div class="preview-container">', unsafe_allow_html=True)
     
+
     skeleton_html = """
     <div style="opacity: 0.6;">
         <div class="skeleton-header"></div>

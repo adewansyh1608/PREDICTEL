@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from style import inject_global_style, render_sidebar
 
+
 st.set_page_config(
     page_title="Processing Data - PREDICTEL",
     page_icon="🔄",
@@ -79,6 +80,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 st.title("Processing Data")
 
 
@@ -127,7 +129,7 @@ with tab1:
         with col2:
             st.markdown('<div class="result-container">', unsafe_allow_html=True)
             st.markdown("**2. Cek Tipe Data**")
-           
+            
             dtype_df = st.session_state.data.dtypes.value_counts().reset_index()
             dtype_df.columns = ['Tipe Data', 'Jumlah Kolom']
             st.dataframe(dtype_df, hide_index=True)
@@ -143,6 +145,7 @@ with tab1:
         st.info("Silakan unggah data terlebih dahulu.")
 
 
+
 with tab2:
     st.markdown("### Preprocessing Otomatis")
     st.write("Sistem akan melakukan pembersihan, encoding, dan scaling data secara otomatis khusus untuk dataset Telco Churn.")
@@ -153,9 +156,11 @@ with tab2:
             
             with st.status("Sedang memproses data...", expanded=True) as status:
                 
+            
                 df_clean = st.session_state.data.copy()
                 st.write("✅ Menyalin dataset...")
                 
+    
                 if 'customerID' in df_clean.columns:
                     df_clean.drop('customerID', axis=1, inplace=True)
                     st.write("✅ Menghapus kolom 'customerID'...")
@@ -169,10 +174,10 @@ with tab2:
                     df_clean['Churn'] = df_clean['Churn'].map({'Yes': 1, 'No': 0})
                     st.write("✅ Encoding variabel target 'Churn' ke (1/0)...")
                 
-
+                
                 categ_cols = [c for c in df_clean.columns if df_clean[c].dtype == 'O']
                 
-
+                
                 le = LabelEncoder()
                 for col in categ_cols:
                     df_clean[col] = le.fit_transform(df_clean[col])
@@ -181,7 +186,7 @@ with tab2:
                 
                 scaler = StandardScaler()
                 num_cols = ['Tenure', 'MonthlyCharges', 'TotalCharges']
-               
+                
                 existing_cols = df_clean.columns
                 cols_to_scale = []
                 for nc in num_cols:
@@ -193,13 +198,14 @@ with tab2:
                     df_clean[cols_to_scale] = scaler.fit_transform(df_clean[cols_to_scale])
                     st.write("✅ Melakukan Scaling pada fitur numerik...")
 
+                
                 st.session_state.data_processed = df_clean
                 
                 status.update(label="Preprocessing Selesai!", state="complete", expanded=False)
             
             st.success("Data berhasil diproses dan siap untuk tahap Training!")
         
-
+        
         if st.session_state.data_processed is not None:
             st.markdown("#### Hasil Preprocessing:")
             st.dataframe(st.session_state.data_processed.head(5), use_container_width=True)
@@ -223,10 +229,10 @@ with tab3:
             random_state = st.number_input("Random State (Seed)", value=42)
             
             if st.button("✂️ Bagi Data (Split)", type="primary"):
-        
+                
                 df_proc = st.session_state.data_processed
                 
-
+            
                 target_col = None
                 for col in df_proc.columns:
                     if col.lower() == 'churn':
@@ -237,10 +243,12 @@ with tab3:
                     X = df_proc.drop(target_col, axis=1)
                     y = df_proc[target_col]
                     
+               
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=test_size/100, random_state=random_state
                     )
                     
+              
                     st.session_state['X_train'] = X_train
                     st.session_state['X_test'] = X_test
                     st.session_state['y_train'] = y_train
@@ -252,7 +260,7 @@ with tab3:
             st.markdown('</div>', unsafe_allow_html=True)
             
         with col2:
-
+          
             if 'X_train' in st.session_state and st.session_state.X_train is not None:
                 st.markdown('<div class="result-container">', unsafe_allow_html=True)
                 st.markdown("#### Ringkasan Pembagian")
