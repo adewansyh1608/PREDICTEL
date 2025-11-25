@@ -27,6 +27,114 @@ st.markdown("""
         font-family: 'Helvetica Neue', sans-serif;
     }
 
+    /* Spacing untuk button */
+    .stButton {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: #4293E4 !important;
+    }
+
+     /* Wrap Card Form */
+    div[data-testid="stForm"] {
+        border: 1.5px solid #4293E4 !important;
+        padding: 20px !important;
+        border-radius: 15px !important;
+        margin-top: 1rem !important;
+        margin-bottom: 1.5rem !important;
+        background-color: #ffffff !important;
+    }
+
+    /* Tombol dalam Form */
+    div[data-testid="stForm"] .stButton>button {
+        border-radius: 10px !important;
+        border-width: 1px !important;
+        border-color: #4293E4 !important;
+        color: #4293E4 !important;
+        background-color: #ffffff !important;
+        border-style: solid !important;
+        margin-top: 1rem !important;
+    }
+
+    /* Tombol Saat Hover */
+    div[data-testid="stForm"] .stButton>button:hover {
+        background-color: #4293E420 !important;
+        color: #4293E4 !important;
+    }
+
+    div[data-baseweb="input"] > div {
+    background-color: white !important;
+    padding: 6px 10px !important;
+    transition: 0.3s ease-in-out !important;
+    }
+
+    /* teks input */
+    div[data-baseweb="input"] input {
+        color: #4293E4 !important;
+        font-weight: 600 !important;
+    }
+
+    /* hover */
+    div[data-baseweb="input"]:hover > div {
+        border-color: #1e6fbe !important;
+        box-shadow: 0 0 6px rgba(66,147,228,0.4) !important;
+    }
+
+    /* saat fokus */
+    div[data-baseweb="input"]:focus-within > div {
+        border-color: #1e6fbe !important;
+        box-shadow: 0 0 8px rgba(66,147,228,0.6) !important;
+    }
+
+    /* Tombol + dan - pada number_input */
+div[data-baseweb="input"] button {
+    background-color: #4293E4 !important;
+    color: white !important;
+    border-radius: 8px !important;
+    border: none !important;
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 18px !important;
+    transition: 0.25s;
+}
+
+/* Hover effect */
+div[data-baseweb="input"] button:hover {
+    background-color: #1e6fbe !important;
+}
+
+/* Styling selectbox container */
+div[data-baseweb="select"] > div {
+    background-color: white !important;     /* warna background */
+    border: 2px solid #4293E4 !important;   /* warna border */
+    border-radius: 8px !important;          /* sudut tumpul */
+    box-shadow: none !important;
+}
+
+/* Saat selectbox di-hover */
+div[data-baseweb="select"] > div:hover {
+    border-color: #1d6fc8 !important;
+}
+
+/* Saat selectbox dibuka */
+div[data-baseweb="select"]:focus-within > div {
+    border-color: #1d6fc8 !important;
+    box-shadow: 0 0 0 1px #1d6fc8 !important;
+}
+
+/* Membuat input selectbox tidak bisa diketik */
+div[data-baseweb="select"] input {
+    caret-color: transparent !important;  /* hide cursor */
+    pointer-events: none !important;       /* disable typing */
+}
+
+/* Style arrow */
+div[data-baseweb="select"] svg {
+    fill: #4293E4 !important; /* warna icon arrow */
+}
+
     /* Styling Header "PREDICTION RESULT" */
     .prediction-header {
         color: #003366;
@@ -199,6 +307,7 @@ with tab2:
                 tech_support = st.selectbox("Tech Support", ["No", "Yes", "No internet service"])
 
             # Tombol Submit Form
+            st.markdown("<div style='margin-top: 1.7rem;'></div>", unsafe_allow_html=True)
             submit_val = st.form_submit_button("🔍 Prediksi Hasil", type="primary", use_container_width=True)
 
         # --- LOGIC & TAMPILAN HASIL (Sesuai Gambar 5584dc.png) ---

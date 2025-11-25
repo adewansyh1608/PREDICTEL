@@ -50,6 +50,19 @@ def inject_global_style() -> None:
         display: none;
     }
 
+    /* Style Navigasi Halaman (Radio Button / Links) - Spacing yang lebih baik */
+    section[data-testid="stSidebar"] .stRadio label {
+        font-size: 1.1rem !important;
+        font-weight: 500;
+        padding: 10px !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* Spacing antar radio button items */
+    [data-testid="stSidebar"] .stRadio > div {
+        gap: 4px !important;
+    }
+
     /* =========================================
        MAIN PAGE STYLING
        ========================================= */
@@ -163,7 +176,7 @@ def render_sidebar(active_page: str) -> None:
         elif selected == "Input Data" and active_page != "Input Data":
             st.switch_page("pages/Input_Data.py")
         elif selected == "Processing Data" and active_page != "Processing Data":
-            st.switch_page("pages/Prepocessing_Data.py")
+            st.switch_page("pages/Preprocessing_Data.py")
         elif selected == "Test Data" and active_page != "Test Data":
             st.switch_page("pages/Test_Data.py")
         elif selected == "Data Visualization" and active_page != "Data Visualization":

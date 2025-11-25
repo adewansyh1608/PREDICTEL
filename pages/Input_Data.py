@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import time
 from style import inject_global_style, render_sidebar
 
 # 1. Konfigurasi Halaman
@@ -25,19 +24,10 @@ st.markdown("""
 <style>
     /* Mengubah warna teks header utama */
     h1 {
-        color: #0F172A;
+        color: #000000;
         font-family: 'Helvetica Neue', sans-serif;
     }
-    
-    /* Styling Container Upload (Kotak Biru dengan Border) */
-    .upload-container {
-        border: 2px solid #00A3E0; /* Warna Biru Cyan */
-        border-radius: 15px;
-        padding: 30px;
-        text-align: center;
-        background-color: white;
-        margin-bottom: 2rem;
-    }
+
     
     /* Styling Skeleton Loader (Kotak Abu-abu Placeholder) */
     .skeleton-row {
@@ -65,7 +55,7 @@ st.markdown("""
     
     /* Mempercantik tampilan File Uploader bawaan Streamlit */
     .stFileUploader {
-        padding: 20px;
+        padding: 30px;
         border: 1px dashed #00A3E0;
         border-radius: 10px;
         background-color: #F0F9FF;
@@ -79,6 +69,49 @@ st.markdown("""
         background-color: #F8FAFC;
         margin-top: 1rem;
     }
+
+    .upload-container {
+        padding: 20px;
+        margin-top: 1rem;
+    }
+
+    /* Spacing untuk button */
+    .stButton {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: #4293E4 !important;
+    }
+
+    /* Wrapper utama file upload */
+div[data-testid="stFileUploader"] {
+    background-color: rgba(66,147,228,0.1) !important; /* biru muda transparan */
+    border: 2px solid #4293E4 !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+}
+
+    /* Tulisan 'Drag and drop file here' */
+div[data-testid="stFileUploader"] section {
+    color: #1e6fbe !important;
+    font-weight: 600 !important;
+}
+
+/* Tombol browse (input file dibungkus label) */
+div[data-testid="stFileUploader"] section label {
+    background-color: #4293E4 !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: 0.3s ease-in-out !important;
+    border: none !important;
+}
+
+
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -89,10 +122,6 @@ st.title("Input Data")
 # Kita bungkus dengan container agar rapi
 st.markdown('<div class="upload-container">', unsafe_allow_html=True)
 
-# Menampilkan icon folder (Emoji sebagai pengganti gambar icon)
-st.markdown("### 📂")
-st.markdown("**Drag and drop CSV file here**")
-st.markdown("or")
 
 # Widget File Uploader Streamlit
 uploaded_file = st.file_uploader(
@@ -101,7 +130,7 @@ uploaded_file = st.file_uploader(
     label_visibility="collapsed" # Menyembunyikan label default agar sesuai desain
 )
 
-st.markdown("<small style='color: grey;'>Maximum file size : 200MB | Format .CSV</small>", unsafe_allow_html=True)
+st.markdown("<small style='color: grey;'>Maximum file size : 50MB | Format .CSV</small>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Logic saat file diupload
@@ -158,8 +187,8 @@ else:
     # Membuat visualisasi baris-baris abu-abu (Skeleton)
     # Ini murni HTML/CSS untuk meniru desain gambar yang Anda kirim
     skeleton_html = """
-    <div style="opacity: 0.6;">
-        <div class="skeleton-header"></div>
+    <div style="opacity: 0.8; padding: 20px;">
+        <div class="skeleton-row" style="width: 100%;"></div>
         <div class="skeleton-row" style="width: 100%;"></div>
         <div class="skeleton-row" style="width: 100%;"></div>
         <div class="skeleton-row" style="width: 100%;"></div>

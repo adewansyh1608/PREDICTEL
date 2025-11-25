@@ -59,6 +59,36 @@ st.markdown("""
         color: #334155;
         font-weight: 600;
     }
+
+    /* Styling selectbox container */
+div[data-baseweb="select"] > div {
+    background-color: white !important;     /* warna background */
+    border: 2px solid #4293E4 !important;   /* warna border */
+    border-radius: 8px !important;          /* sudut tumpul */
+    box-shadow: none !important;
+}
+
+/* Saat selectbox di-hover */
+div[data-baseweb="select"] > div:hover {
+    border-color: #1d6fc8 !important;
+}
+
+/* Saat selectbox dibuka */
+div[data-baseweb="select"]:focus-within > div {
+    border-color: #1d6fc8 !important;
+    box-shadow: 0 0 0 1px #1d6fc8 !important;
+}
+
+/* Membuat input selectbox tidak bisa diketik */
+div[data-baseweb="select"] input {
+    caret-color: transparent !important;  /* hide cursor */
+    pointer-events: none !important;       /* disable typing */
+}
+
+/* Style arrow */
+div[data-baseweb="select"] svg {
+    fill: #4293E4 !important; /* warna icon arrow */
+}
 </style>
 """, unsafe_allow_html=True)
 

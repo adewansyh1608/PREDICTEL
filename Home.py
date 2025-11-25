@@ -42,6 +42,16 @@ st.markdown("""
         opacity: 0.3;
     }
 
+    /* Spacing untuk button */
+    .stButton {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 10px !important;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: #4293E4 !important;
+    }
+
     /* Style Navigasi Halaman (Radio Button / Links) */
     section[data-testid="stSidebar"] .stRadio label {
         font-size: 1.1rem !important;
