@@ -12,7 +12,6 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Home")
 
-# Hero Section
 st.markdown(
     """
     <div class="app-hero">
@@ -48,7 +47,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Call to Action Button
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if st.button("🚀 Mulai Analisis", type="primary", use_container_width=True):
@@ -56,7 +54,6 @@ with col2:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Feature Cards menggunakan native Streamlit components
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
