@@ -1,179 +1,204 @@
 import streamlit as st
-from PIL import Image
+
 from style import inject_global_style, render_sidebar
 
 st.set_page_config(
     page_title="PREDICTEL - Sistem Prediksi Churn",
     page_icon="📡",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
 inject_global_style()
-
-
-st.markdown("""
-<style>
-    /* =========================================
-       SIDEBAR STYLING
-       ========================================= */
-    
-    /* Memaksa semua teks di sidebar menjadi PUTIH agar terbaca di background biru */
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span, [data-testid="stSidebar"] label {
-        color: #FFFFFF !important;
-    }
-    
-    /* Header 'PREDICTEL' di Sidebar */
-    .sidebar-logo {
-        font-family: 'Arial Black', sans-serif;
-        font-size: 2.2rem;
-        color: #FFFFFF;
-        text-align: center;
-        margin-bottom: 0px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    
-    /* Garis pemisah di bawah logo PREDICTEL */
-    .sidebar-divider {
-        height: 2px;
-        background-color: #FFFFFF;
-        margin-bottom: 20px;
-        opacity: 0.3;
-    }
-
-    /* Spacing untuk button */
-    .stButton {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 10px !important;
-        border-width: 1px !important;
-        border-style: solid !important;
-        border-color: #4293E4 !important;
-    }
-
-    /* Style Navigasi Halaman (Radio Button / Links) */
-    section[data-testid="stSidebar"] .stRadio label {
-        font-size: 1.1rem !important;
-        font-weight: 500;
-        padding: 10px;
-    }
-    
-    /* =========================================
-       MAIN PAGE STYLING
-       ========================================= */
-    
-    .main {
-        background-color: #FFFFFF;
-    }
-    
-    /* Kartu Hero Biru Besar */
-    .hero-container {
-        background: linear-gradient(90deg, #0083B8 0%, #00A3E0 50%, #00E0FF 100%); /* Biru gradasi PREDICTEL */
-        padding: 3rem;
-        border-radius: 20px;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 15px rgba(0, 131, 184, 0.3);
-    }
-    .hero-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        color: #FFFFFF !important;
-    }
-    .hero-subtitle {
-        font-size: 1.1rem;
-        font-weight: 400;
-        line-height: 1.6;
-        color: #F0F9FF !important;
-    }
-    
-    /* Kartu Info (Cara Kerja & Tentang) */
-    .info-card {
-        background-color: white;
-        padding: 2rem;
-        border-radius: 15px;
-        border: 2px solid #00A3E0; /* Border Cyan */
-        height: 100%;
-        color: #333333;
-    }
-    .card-header {
-        color: #0F172A;
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-    
-    /* Tombol Mulai (Custom) */
-    div.stButton > button {
-        background-color: #FFFFFF;
-        color: #0083B8;
-        border: 2px solid white;
-        font-weight: 800;
-        padding: 0.6rem 1.5rem;
-        border-radius: 10px;
-    }
-    div.stButton > button:hover {
-        background-color: #E0F2FE;
-        color: #006080;
-        border-color: #E0F2FE;
-    }
-
-</style>
-""", unsafe_allow_html=True)
-
 render_sidebar("Home")
 
-st.markdown("""
-<div class="hero-container">
-    <div class="hero-title">SISTEM PREDIKSI CUSTOMER CHURN</div>
-    <div class="hero-subtitle">
-        Aplikasi analisis berbasis Machine Learning untuk memprediksi dan mencegah 
-        kehilangan pelanggan dengan akurasi tinggi menggunakan algoritma Logistic Regression.
+# Hero Section
+st.markdown(
+    """
+    <div class="app-hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span>📡</span>
+                <span>PREDICTEL Analytics Platform</span>
+            </div>
+            <h1 class="hero-title">
+                Prediksi Customer Churn dengan Machine Learning
+            </h1>
+            <p class="hero-subtitle">
+                Platform analitik berbasis AI untuk memprediksi risiko churn pelanggan
+                telekomunikasi menggunakan algoritma Logistic Regression yang akurat dan dapat diinterpretasi.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Logistic Regression</div>
+                    <div class="hero-stat-label">Algoritma ML</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">19+ Features</div>
+                    <div class="hero-stat-label">Fitur Analisis</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Real-time</div>
+                    <div class="hero-stat-label">Prediksi</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <br>
-</div>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
-col_spacer, col_button = st.columns([4, 1])
-with col_button:
-    if st.button("🚀 Mulai Input Data", type="primary", use_container_width=True):
+# Call to Action Button
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    if st.button("🚀 Mulai Analisis", type="primary", use_container_width=True):
         st.switch_page("pages/Input_Data.py")
 
+st.markdown("<br>", unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+# Feature Cards menggunakan native Streamlit components
+col1, col2 = st.columns(2, gap="large")
 
 with col1:
+    st.subheader("⚡ Workflow Otomatis")
+    st.write(
+        "Pipeline end-to-end yang terintegrasi: upload data → preprocessing otomatis → training model → visualisasi hasil → prediksi individual."
+    )
     st.markdown("""
-    <div class="info-card">
-        <div class="card-header">
-            ⚙️ Cara Kerja
-        </div>
-        <ol style="margin-left: 1rem; line-height: 1.8;">
-            <li><strong>Input Data Pelanggan</strong><br>Unggah file CSV dataset Telco Customer Churn.</li>
-            <li><strong>Processing Data</strong><br>Sistem membersihkan data dan melakukan encoding otomatis.</li>
-            <li><strong>Latih Data</strong><br>Model Logistic Regression mempelajari pola churn dari data.</li>
-            <li><strong>Visualisasi Data</strong><br>Lihat grafik dan hasil analisis mendalam.</li>
-        </ol>
-    </div>
-    """, unsafe_allow_html=True)
+    - Data cleaning dan encoding otomatis
+    - Feature scaling yang optimal
+    - Handling missing values (median/mean/modus)
+    - Train/test split yang seimbang
+    """)
 
+    st.markdown("---")
+
+    st.subheader("📊 Visualisasi Canggih")
+    st.write(
+        "Dashboard interaktif dengan berbagai jenis grafik untuk mengeksplorasi pola churn dan memahami perilaku pelanggan secara mendalam."
+    )
+    st.markdown("""
+    - Scatter plots dan bar charts
+    - Distribusi churn per kategori
+    - Correlation heatmaps
+    - Interactive filtering
+    """)
+
+    st.markdown("---")
+
+    st.subheader("🔧 Preprocessing Fleksibel")
+    st.write(
+        "Berbagai opsi preprocessing data yang dapat disesuaikan dengan karakteristik dataset dan kebutuhan analisis spesifik."
+    )
+    st.markdown("""
+    - Pilihan handling missing values
+    - Multiple encoding strategies
+    - Feature scaling methods
+    - Data validation checks
+    """)
 
 with col2:
+    st.subheader("🧠 Machine Learning")
+    st.write(
+        "Menggunakan algoritma Logistic Regression yang telah dioptimasi untuk dataset churn telekomunikasi dengan interpretabilitas yang tinggi."
+    )
     st.markdown("""
-    <div class="info-card">
-        <div class="card-header">
-            🧠 Tentang Sistem
+    - Akurasi model yang konsisten
+    - ROC AUC score untuk evaluasi
+    - Confusion matrix yang informatif
+    - Feature importance analysis
+    """)
+
+    st.markdown("---")
+
+    st.subheader("🎯 Prediksi Akurat")
+    st.write(
+        "Simulasi prediksi real-time untuk pelanggan individual dengan probabilitas churn dan rekomendasi tindakan bisnis."
+    )
+    st.markdown("""
+    - Input data pelanggan yang mudah
+    - Hasil prediksi instan
+    - Confidence score yang detail
+    - Business insights yang actionable
+    """)
+
+    st.markdown("---")
+
+    st.subheader("💼 Business Impact")
+    st.write(
+        "Mendukung pengambilan keputusan bisnis dengan insights yang dapat diimplementasikan untuk program retensi pelanggan."
+    )
+    st.markdown("""
+    - Identifikasi pelanggan high-risk
+    - Analisis faktor churn utama
+    - ROI calculation untuk retensi
+    - Strategic recommendations
+    """)
+
+# Quick Start Guide
+st.markdown("---")
+st.markdown("## 🚀 Quick Start Guide")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(
+        """
+        **Step 1: Input Data**
+
+        📂 Upload dataset CSV dengan format Telco Customer Churn
+
+        ✅ Validasi otomatis struktur data
+        """
+    )
+
+with col2:
+    st.markdown(
+        """
+        **Step 2: Preprocessing**
+
+        ⚙️ Pilih metode handling missing values
+
+        🔄 Automatic feature engineering
+        """
+    )
+
+with col3:
+    st.markdown(
+        """
+        **Step 3: Model Training**
+
+        🧪 Train Logistic Regression model
+
+        📊 Evaluasi performa model
+        """
+    )
+
+with col4:
+    st.markdown(
+        """
+        **Step 4: Analysis**
+
+        📈 Visualisasi insights
+
+        🎯 Prediksi individual
+        """
+    )
+
+# Footer Info
+st.markdown("<br><br>", unsafe_allow_html=True)
+st.markdown("---")
+
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown(
+        """
+        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+            <p>
+                <strong>PREDICTEL</strong> - Customer Churn Analytics Platform<br>
+                Powered by Streamlit & Scikit-learn | Built for Telecom Industry
+            </p>
         </div>
-        <p style="line-height: 1.6; text-align: justify;">
-            <strong>Predictel</strong> adalah sistem prediksi berbasis Machine Learning yang dibangun 
-            untuk membantu perusahaan telekomunikasi mengidentifikasi pelanggan yang berisiko 
-            berhenti berlangganan (churn).
-            <br><br>
-            Sistem ini menggunakan algoritma <strong>Logistic Regression</strong> yang telah dilatih 
-            dengan 19 fitur penting meliputi data demografis, riwayat layanan, dan pola 
-            pembayaran pelanggan.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )

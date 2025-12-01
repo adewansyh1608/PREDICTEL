@@ -1,413 +1,443 @@
-import streamlit as st
-import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+import pandas as pd
+import streamlit as st
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+
 from style import inject_global_style, render_sidebar
 
-# 1. Konfigurasi Halaman
+# Konfigurasi Halaman
 st.set_page_config(
-    page_title="Processing Data - PREDICTEL",
-    page_icon="🔄",
-    layout="wide"
+    page_title="Preprocessing Data - PREDICTEL", page_icon="⚙️", layout="wide"
 )
 
 inject_global_style()
 render_sidebar("Processing Data")
 
-# 2. Inisialisasi Session State
-# Kita butuh variable untuk menyimpan data yang sudah di-clean dan di-split
+# Inisialisasi Session State
 if "data" not in st.session_state:
     st.session_state.data = None
 if "data_processed" not in st.session_state:
     st.session_state.data_processed = None
 if "X_train" not in st.session_state:
     st.session_state.X_train = None
+if "X_test" not in st.session_state:
+    st.session_state.X_test = None
+if "y_train" not in st.session_state:
+    st.session_state.y_train = None
+if "y_test" not in st.session_state:
+    st.session_state.y_test = None
+if "scaler" not in st.session_state:
+    st.session_state.scaler = None
+if "preprocessing_config" not in st.session_state:
+    st.session_state.preprocessing_config = {}
 
-# 3. Custom CSS (Sesuai Design Gambar)
-st.markdown("""
-<style>
-    /* Styling Header dengan spacing yang lebih baik */
-    h1 {
-        color: #0F172A;
-        font-family: 'Helvetica Neue', sans-serif;
-        margin-bottom: 2rem;
-    }
-    
-    /* Styling Subheader dengan spacing */
-    h2 {
-        margin-bottom: 1.5rem;
-        margin-top: 1.5rem;
-    }
-    
-    h3 {
-        margin-bottom: 1.5rem;
-        margin-top: 1rem;
-    }
-    
-    /* Styling Skeleton Loader (Baris Abu-abu) */
-    .skeleton-row {
-        width: 100%;
-        height: 30px;
-        background-color: #E0E0E0;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        animation: pulse 1.5s infinite;
-    }
-    .skeleton-header {
-        width: 100%;
-        height: 40px;
-        background-color: #D1D5DB;
-        margin-bottom: 20px;
-        border-radius: 5px;
-    }
-    @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-    }
-    
-    /* Styling Tab Navigasi agar mirip tombol Pill di gambar dengan spacing */
-    div[data-testid="stTabs"] {
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-    }
-    
-    div[data-testid="stTabs"] button {
-        background-color: white;
-        border: 1px solid #4293E4;
-        border-radius: 20px;
-        padding: 10px 20px;
-        color: #00A3E0;
-        font-weight: bold;
-        margin-right: 10px;
-    }
-    /* Tab yang aktif */
-    div[data-testid="stTabs"] button[aria-selected="true"] {
-        background-color: #00A3E0;
-        color: white;
-        border: 1px solid #00A3E0;
-    }
-    
-    /* Container Box Putih untuk Hasil dengan spacing yang lebih baik */
-    .result-container {
-        background-color: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 25px;
-        margin-top: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* Spacing untuk dataframe */
-    .stDataFrame {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .stTabs 
-    [data-baseweb="tab"] {
-    background-color: #4293E4;
-    color: white;
-    margin-right: 4px;
-    margin-bottom: 1rem;
-}
-    
-    /* Spacing untuk divider */
-    hr {
-        margin: 2rem 0;
-    }
-    
-    /* Spacing untuk columns */
-    [data-testid="column"] {
-        padding: 0 10px;
-    }
-    
-    /* Spacing untuk info/warning/success boxes */
-    .stAlert {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Spacing untuk button */
-    .stButton {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
-        border-radius: 10px !important;
-        border-width: 1px !important;
-        border-style: solid !important;
-        border-color: #4293E4 !important;
-    }
-    
-    /* Spacing untuk metric */
-    [data-testid="stMetricContainer"] {
-        margin-bottom: 1rem;
-    }
-
-    div[data-baseweb="input"] > div {
-    background-color: white !important;
-    padding: 6px 10px !important;
-    transition: 0.3s ease-in-out !important;
-    }
-
-    /* teks input */
-    div[data-baseweb="input"] input {
-        color: #4293E4 !important;
-        font-weight: 600 !important;
-    }
-
-    /* hover */
-    div[data-baseweb="input"]:hover > div {
-        border-color: #1e6fbe !important;
-        box-shadow: 0 0 6px rgba(66,147,228,0.4) !important;
-    }
-
-    /* saat fokus */
-    div[data-baseweb="input"]:focus-within > div {
-        border-color: #1e6fbe !important;
-        box-shadow: 0 0 8px rgba(66,147,228,0.6) !important;
-    }
-
-</style>
-""", unsafe_allow_html=True)
-
-# 4. Judul Halaman
-st.title("Processing Data")
-
-# Spacing setelah judul
-st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# BAGIAN 1: TAMPILAN DATA ASLI (Bagian Atas Design)
-# ---------------------------------------------------------
-st.subheader("Data Asli")
-
-if st.session_state.data is not None:
-    # Tampilkan Dataframe dalam container dengan tinggi terbatas
-    st.dataframe(st.session_state.data, height=250, use_container_width=True)
-else:
-    # TAMPILAN SKELETON (Jika data belum ada)
-    skeleton_html = """
-    <div style="opacity: 0.5; margin-bottom: 2rem;">
-        <div class="skeleton-header"></div>
-        <div class="skeleton-row"></div>
-        <div class="skeleton-row"></div>
-        <div class="skeleton-row"></div>
-    </div>
-    <div style="text-align: center; color: grey; margin-top: -120px; position: relative; z-index: 10; margin-bottom: 3rem;">
-        <i>Belum ada data. Silakan input data terlebih dahulu.</i>
-    </div>
+# Header
+st.markdown(
     """
-    st.markdown(skeleton_html, unsafe_allow_html=True)
+    <div class="step-header">
+        <strong>Langkah 2 — Data Preprocessing & Model Preparation</strong>
+        <p>
+            Lakukan preprocessing data dengan berbagai opsi handling missing values,
+            feature encoding, dan data scaling untuk persiapan machine learning model.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
-st.markdown("---") # Garis Pembatas Biru
+st.title("⚙️ Data Preprocessing")
 
-# Spacing sebelum tabs
-st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+# Cek data tersedia
+if st.session_state.data is None:
+    st.warning(
+        "⚠️ Data belum tersedia. Silakan upload dataset di halaman **Input Data** terlebih dahulu."
+    )
+    st.stop()
 
-# ---------------------------------------------------------
-# BAGIAN 2: NAVIGASI TABS (Bagian Tengah Design)
-# ---------------------------------------------------------
+# Tampilan Data Asli
+st.subheader("📋 Dataset Overview")
+with st.expander("🔍 Lihat Data Asli", expanded=False):
+    st.dataframe(st.session_state.data, height=300, use_container_width=True)
 
-# Kita gunakan st.tabs untuk meniru tombol navigasi di gambar
-tab1, tab2, tab3 = st.tabs(["📊 Analisis Data", "🛠️ Preprocessing", "✂️ Split Data"])
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Total Rows", f"{st.session_state.data.shape[0]:,}")
+    with col2:
+        st.metric("Total Columns", st.session_state.data.shape[1])
+    with col3:
+        missing_count = st.session_state.data.isnull().sum().sum()
+        st.metric("Missing Values", missing_count)
 
-# Spacing setelah tabs
-st.markdown("<div style='margin-top: 10px; margin-bottom: 10px;'></div>", unsafe_allow_html=True)
+st.markdown("---")
 
-# ---------------------------------------------------------
-# BAGIAN 3: KONTEN DINAMIS (Bagian Bawah Design)
-# ---------------------------------------------------------
+# Tabs untuk Preprocessing
+tab1, tab2, tab3 = st.tabs(
+    ["🔧 Data Analysis", "⚙️ Preprocessing Options", "✂️ Train/Test Split"]
+)
 
-# ================= TAB 1: ANALISIS DATA =================
+# ============== TAB 1: DATA ANALYSIS ==============
 with tab1:
-    st.markdown("### Analisis Struktur Data")
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-    
-    if st.session_state.data is not None:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**1. Cek Missing Values**")
-            null_data = st.session_state.data.isnull().sum()
-            if null_data.sum() == 0:
-                st.success("Tidak ditemukan missing values standar (NaN).")
-            else:
-                st.warning(f"Ditemukan {null_data.sum()} missing values.")
-                st.dataframe(null_data[null_data > 0])
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("**2. Cek Tipe Data**")
-            # Menampilkan info tipe data sekilas
-            dtype_df = st.session_state.data.dtypes.value_counts().reset_index()
-            dtype_df.columns = ['Tipe Data', 'Jumlah Kolom']
-            st.dataframe(dtype_df, hide_index=True)
-            st.info("Catatan: Kolom 'TotalCharges' sering terdeteksi sebagai Object (Teks) padahal harusnya Angka.")
-            st.markdown('</div>', unsafe_allow_html=True)
+    st.subheader("📊 Data Quality Analysis")
 
-        st.markdown("**3. Statistik Deskriptif**")
-        st.markdown("<div style='margin-top: 1px; margin-bottom: 1px;'></div>", unsafe_allow_html=True)
-        st.dataframe(st.session_state.data.describe(), use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+    df = st.session_state.data
 
-    else:
-        st.info("Silakan unggah data terlebih dahulu.")
+    col1, col2 = st.columns(2)
 
+    with col1:
+        st.markdown("**🔍 Missing Values Analysis**")
+        # Missing values analysis
+        missing_data = df.isnull().sum()
+        missing_df = pd.DataFrame(
+            {
+                "Column": missing_data.index,
+                "Missing Count": missing_data.values,
+                "Missing %": (missing_data.values / len(df) * 100).round(2),
+            }
+        )
+        missing_df = missing_df[missing_df["Missing Count"] > 0]
 
-# ================= TAB 2: PREPROCESSING =================
-with tab2:
-    st.markdown("### Preprocessing Otomatis")
-    st.markdown("<div style='margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-    st.write("Sistem akan melakukan pembersihan, encoding, dan scaling data secara otomatis khusus untuk dataset Telco Churn.")
-    
-    if st.session_state.data is not None:
-        
-        # Tombol Aksi
-        if st.button("🚀 Jalankan Preprocessing", type="primary"):
-            
-            with st.status("Sedang memproses data...", expanded=True) as status:
-                
-                # 1. Buat Copy Data
-                df_clean = st.session_state.data.copy()
-                st.write("✅ Menyalin dataset...")
-                
-                # 2. Drop CustomerID (Tidak relevan)
-                if 'customerID' in df_clean.columns:
-                    df_clean.drop('customerID', axis=1, inplace=True)
-                    st.write("✅ Menghapus kolom 'customerID'...")
-                
-                # 3. Fix TotalCharges (Object -> Numeric)
-                # Mengubah spasi kosong menjadi NaN, lalu diisi 0, lalu convert ke float
-                if 'TotalCharges' in df_clean.columns:
-                    df_clean['TotalCharges'] = pd.to_numeric(df_clean['TotalCharges'], errors='coerce')
-                    df_clean['TotalCharges'] = df_clean['TotalCharges'].fillna(0)
-                    st.write("✅ Memperbaiki tipe data 'TotalCharges'...")
-                
-                # 4. Encoding Target (Churn Yes/No -> 1/0)
-                if 'Churn' in df_clean.columns:
-                    df_clean['Churn'] = df_clean['Churn'].map({'Yes': 1, 'No': 0})
-                    st.write("✅ Encoding variabel target 'Churn' ke (1/0)...")
-                
-                # 5. Encoding Variabel Kategorikal Lain (One-Hot / Label)
-                # Kita pisahkan kolom numerik dan kategorik
-                categ_cols = [c for c in df_clean.columns if df_clean[c].dtype == 'O']
-                
-                # Gunakan Label Encoding untuk yang biner/sederhana agar kolom tidak meledak jumlahnya
-                le = LabelEncoder()
-                for col in categ_cols:
-                    df_clean[col] = le.fit_transform(df_clean[col])
-                st.write(f"✅ Melakukan Encoding pada {len(categ_cols)} kolom kategorikal...")
-                
-                # 6. Scaling (Standarisasi Data Numerik)
-                # Agar Tenure (0-70) setara dengan MonthlyCharges (0-100)
-                scaler = StandardScaler()
-                num_cols = ['Tenure', 'MonthlyCharges', 'TotalCharges']
-                # Cek dulu apakah kolomnya ada (antisipasi beda nama kolom besar/kecil)
-                # Kita cari kolom yang cocok secara case-insensitive
-                existing_cols = df_clean.columns
-                cols_to_scale = []
-                for nc in num_cols:
-                    for ec in existing_cols:
-                        if nc.lower() == ec.lower():
-                            cols_to_scale.append(ec)
-                
-                if cols_to_scale:
-                    df_clean[cols_to_scale] = scaler.fit_transform(df_clean[cols_to_scale])
-                    st.write("✅ Melakukan Scaling pada fitur numerik...")
+        if len(missing_df) > 0:
+            st.dataframe(missing_df, hide_index=True, use_container_width=True)
+        else:
+            st.success("✅ No missing values detected!")
 
-                # Simpan ke Session State
-                st.session_state.data_processed = df_clean
-                
-                status.update(label="Preprocessing Selesai!", state="complete", expanded=False)
-            
-            st.success("Data berhasil diproses dan siap untuk tahap Training!")
-        
-        # Tampilkan Hasil Jika Sudah Diproses
-        if st.session_state.data_processed is not None:
-            st.markdown("#### Hasil Preprocessing:")
-            st.markdown("<div style='margin-top: 1rem; margin-bottom: 1rem;'></div>", unsafe_allow_html=True)
-            st.dataframe(st.session_state.data_processed.head(5), use_container_width=True)
-            st.markdown("<div style='margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
-            st.caption(f"Dimensi Data Baru: {st.session_state.data_processed.shape}")
-            
-    else:
-        st.info("Silakan unggah data terlebih dahulu.")
-
-
-# ================= TAB 3: SPLIT DATA =================
-with tab3:
-
-    st.markdown("### Pembagian Data (Train/Test Split)")
-    st.markdown("<div style='margin-bottom: 10px;'></div>", unsafe_allow_html=True)
-
-    if st.session_state.data_processed is not None:
-
-        # ==========================
-        #  BAGIAN INPUT (ATAS)
-        # ==========================
-        test_size = st.slider("Ukuran Data Testing (%)", min_value=10, max_value=50, value=20, step=5)
-
-        random_state = st.number_input("Random State (Seed)", value=42)
-
-        if st.button("✂️ Bagi Data (Split)", type="primary"):
-            df_proc = st.session_state.data_processed
-
-            # Cari kolom churn
-            target_col = None
-            for col in df_proc.columns:
-                if col.lower() == 'churn':
-                    target_col = col
-                    break
-
-            if target_col:
-                X = df_proc.drop(target_col, axis=1)
-                y = df_proc[target_col]
-
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y, test_size=test_size/100, random_state=random_state
+        # Handle TotalCharges special case (blank spaces)
+        if "TotalCharges" in df.columns:
+            blank_count = (df["TotalCharges"] == " ").sum()
+            if blank_count > 0:
+                st.warning(
+                    f"⚠️ Found {blank_count} blank values (spaces) in TotalCharges column"
                 )
 
-                st.session_state['X_train'] = X_train
-                st.session_state['X_test'] = X_test
-                st.session_state['y_train'] = y_train
-                st.session_state['y_test'] = y_test
+    with col2:
+        st.markdown("**📋 Data Types Overview**")
+        dtype_info = pd.DataFrame(
+            {
+                "Column": df.columns,
+                "Data Type": df.dtypes.astype(str),
+                "Unique Values": [df[col].nunique() for col in df.columns],
+            }
+        )
+        st.dataframe(dtype_info, hide_index=True, use_container_width=True)
 
-                st.toast("Pembagian data berhasil!", icon="✅")
-            else:
-                st.error("Kolom target 'Churn' tidak ditemukan.")
+    # Statistical Summary
+    st.markdown("**📈 Numerical Features Summary**")
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    if len(numeric_cols) > 0:
+        st.dataframe(df[numeric_cols].describe(), use_container_width=True)
+    else:
+        st.info("Tidak ada kolom numerik yang terdeteksi.")
 
+# ============== TAB 2: PREPROCESSING OPTIONS ==============
+with tab2:
+    st.subheader("⚙️ Preprocessing Configuration")
 
-        # ==========================
-        #  BAGIAN OUTPUT (BAWAH)
-        # ==========================
-        if 'X_train' in st.session_state and st.session_state.X_train is not None:
-            st.markdown("#### Ringkasan Pembagian")
-            st.markdown("<div style='margin-bottom: 1.5rem;'></div>", unsafe_allow_html=True)
+    # Configuration Form
+    with st.form("preprocessing_config_form"):
+        col1, col2 = st.columns(2)
 
-            # Metric tetap dua kolom (bagusnya begitu)
-            metric_col1, metric_col2 = st.columns(2)
-            with metric_col1:
-                st.metric("Data Training", f"{st.session_state.X_train.shape[0]} Baris",
-                          "Digunakan untuk Melatih Model")
-            with metric_col2:
-                st.metric("Data Testing", f"{st.session_state.X_test.shape[0]} Baris",
-                          f"Digunakan untuk Validasi ({test_size}%)")
+        with col1:
+            st.markdown("**🔧 Missing Values Strategy**")
+            missing_strategy = st.selectbox(
+                "Pilih metode untuk handling missing values:",
+                ["mean", "median", "most_frequent"],
+                help="• Mean: Rata-rata (untuk data numerik)\n• Median: Nilai tengah (robust terhadap outlier)\n• Most Frequent: Modus (untuk data kategorikal)",
+            )
 
-            st.markdown("<div style='margin: 1.5rem 0;'></div>", unsafe_allow_html=True)
-            st.markdown("---")
+            st.markdown("**📊 Scaling Method**")
+            scaling_method = st.selectbox(
+                "Pilih metode scaling:",
+                ["StandardScaler", "MinMaxScaler", "None"],
+                help="• StandardScaler: Z-score normalization\n• MinMaxScaler: Scale ke range 0-1\n• None: Tidak ada scaling",
+            )
 
-            st.markdown("<div style='margin-top: 1.5rem; margin-bottom: 1rem;'></div>",
-                        unsafe_allow_html=True)
-            st.markdown("**Preview Fitur Training (X_train):**")
+        with col2:
+            st.markdown("**🎯 Target Column**")
+            target_column = st.selectbox(
+                "Pilih kolom target (Churn):",
+                [
+                    col
+                    for col in st.session_state.data.columns
+                    if "churn" in col.lower()
+                ],
+                help="Kolom yang berisi informasi churn (Yes/No)",
+            )
 
-            st.dataframe(st.session_state.X_train.head(3), use_container_width=True)
+            st.markdown("**✂️ Test Split Size**")
+            test_size = (
+                st.slider(
+                    "Persentase data untuk testing:",
+                    min_value=10,
+                    max_value=50,
+                    value=20,
+                    step=5,
+                    help="Persentase data yang akan digunakan untuk testing model",
+                )
+                / 100
+            )
 
-        else:
-            st.info("Klik tombol 'Bagi Data' untuk memproses.")
+            random_state = st.number_input(
+                "Random State (untuk reproducibility):",
+                min_value=0,
+                max_value=999,
+                value=42,
+            )
+
+        # Submit Button
+        submitted = st.form_submit_button(
+            "🚀 Run Preprocessing",
+            type="primary",
+            use_container_width=True,
+            key="preprocessing_submit_btn",
+        )
+
+        if submitted:
+            with st.status("🔄 Processing data...", expanded=True) as status:
+                try:
+                    # 1. Copy data
+                    df_clean = st.session_state.data.copy()
+                    st.write("✅ Copying dataset...")
+
+                    # 2. Remove irrelevant columns
+                    columns_to_drop = (
+                        ["customerID"] if "customerID" in df_clean.columns else []
+                    )
+                    if columns_to_drop:
+                        df_clean = df_clean.drop(columns=columns_to_drop)
+                        st.write(f"✅ Removing columns: {columns_to_drop}")
+
+                    # 3. Handle TotalCharges special case (blank spaces)
+                    if "TotalCharges" in df_clean.columns:
+                        # Replace blank spaces with NaN
+                        df_clean["TotalCharges"] = df_clean["TotalCharges"].replace(
+                            " ", np.nan
+                        )
+                        # Convert to numeric
+                        df_clean["TotalCharges"] = pd.to_numeric(
+                            df_clean["TotalCharges"], errors="coerce"
+                        )
+                        st.write("✅ Fixed TotalCharges column...")
+
+                    # 4. Separate features and target
+                    if target_column in df_clean.columns:
+                        # Encode target variable
+                        if df_clean[target_column].dtype == "object":
+                            df_clean[target_column] = df_clean[target_column].map(
+                                {"Yes": 1, "No": 0}
+                            )
+                            st.write("✅ Encoding target variable (Yes=1, No=0)...")
+
+                        X = df_clean.drop(target_column, axis=1)
+                        y = df_clean[target_column]
+                    else:
+                        st.error(f"Target column '{target_column}' not found!")
+                        st.stop()
+
+                    # 5. Handle missing values
+                    numeric_features = X.select_dtypes(include=[np.number]).columns
+                    categorical_features = X.select_dtypes(include=["object"]).columns
+
+                    # For numeric features
+                    if len(numeric_features) > 0:
+                        if missing_strategy == "most_frequent":
+                            # Use median for numeric when most_frequent is selected
+                            imputer_num = SimpleImputer(strategy="median")
+                        else:
+                            imputer_num = SimpleImputer(strategy=missing_strategy)
+
+                        X[numeric_features] = imputer_num.fit_transform(
+                            X[numeric_features]
+                        )
+                        st.write(
+                            f"✅ Handling missing values (numeric): {missing_strategy}"
+                        )
+
+                    # For categorical features
+                    if len(categorical_features) > 0:
+                        imputer_cat = SimpleImputer(strategy="most_frequent")
+                        X[categorical_features] = imputer_cat.fit_transform(
+                            X[categorical_features]
+                        )
+                        st.write(
+                            "✅ Handling missing values (categorical): most_frequent"
+                        )
+
+                    # 6. Encode categorical variables
+                    if len(categorical_features) > 0:
+                        label_encoders = {}
+                        for col in categorical_features:
+                            le = LabelEncoder()
+                            X[col] = le.fit_transform(X[col].astype(str))
+                            label_encoders[col] = le
+                        st.write(
+                            f"✅ Label encoding for {len(categorical_features)} categorical columns"
+                        )
+
+                    # 7. Feature Scaling
+                    scaler = None
+                    if scaling_method == "StandardScaler":
+                        from sklearn.preprocessing import StandardScaler
+
+                        scaler = StandardScaler()
+                        X_scaled = pd.DataFrame(
+                            scaler.fit_transform(X), columns=X.columns, index=X.index
+                        )
+                        X = X_scaled
+                        st.write("✅ Standardization scaling applied")
+                    elif scaling_method == "MinMaxScaler":
+                        from sklearn.preprocessing import MinMaxScaler
+
+                        scaler = MinMaxScaler()
+                        X_scaled = pd.DataFrame(
+                            scaler.fit_transform(X), columns=X.columns, index=X.index
+                        )
+                        X = X_scaled
+                        st.write("✅ MinMax scaling applied")
+                    else:
+                        st.write("✅ No scaling applied")
+
+                    # 8. Train/Test Split
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        X, y, test_size=test_size, random_state=random_state, stratify=y
+                    )
+                    st.write(f"✅ Data split: {len(X_train)} train, {len(X_test)} test")
+
+                    # Save to session state
+                    st.session_state.data_processed = pd.concat([X, y], axis=1)
+                    st.session_state.X_train = X_train
+                    st.session_state.X_test = X_test
+                    st.session_state.y_train = y_train
+                    st.session_state.y_test = y_test
+                    st.session_state.scaler = scaler
+                    st.session_state.preprocessing_config = {
+                        "missing_strategy": missing_strategy,
+                        "scaling_method": scaling_method,
+                        "target_column": target_column,
+                        "test_size": test_size,
+                        "random_state": random_state,
+                    }
+
+                    status.update(
+                        label="✅ Preprocessing completed!",
+                        state="complete",
+                        expanded=False,
+                    )
+
+                except Exception as e:
+                    st.error(f"❌ Error during preprocessing: {str(e)}")
+                    status.update(
+                        label="❌ Preprocessing failed!", state="error", expanded=False
+                    )
+
+    # Show preprocessing results
+    if st.session_state.data_processed is not None:
+        st.markdown("---")
+        st.subheader("✅ Preprocessing Results")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Features", st.session_state.X_train.shape[1])
+        with col2:
+            st.metric("Training Samples", st.session_state.X_train.shape[0])
+        with col3:
+            st.metric("Test Samples", st.session_state.X_test.shape[0])
+
+        # Show sample of processed data
+        with st.expander("🔍 Preview Processed Data", expanded=False):
+            st.markdown("**Training Features (X_train) - First 5 rows:**")
+            st.dataframe(st.session_state.X_train.head(), use_container_width=True)
+
+            st.markdown("**Training Target (y_train) - First 10 values:**")
+            st.write(st.session_state.y_train.head(10).tolist())
+
+# ============== TAB 3: TRAIN/TEST SPLIT INFO ==============
+with tab3:
+    st.subheader("✂️ Data Split Information")
+
+    if st.session_state.X_train is not None:
+        # Split statistics
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("**📊 Split Statistics**")
+            total_samples = len(st.session_state.X_train) + len(st.session_state.X_test)
+            train_pct = len(st.session_state.X_train) / total_samples * 100
+            test_pct = len(st.session_state.X_test) / total_samples * 100
+
+            metrics_data = {
+                "Dataset": ["Training", "Testing", "Total"],
+                "Samples": [
+                    len(st.session_state.X_train),
+                    len(st.session_state.X_test),
+                    total_samples,
+                ],
+                "Percentage": [f"{train_pct:.1f}%", f"{test_pct:.1f}%", "100.0%"],
+            }
+            st.dataframe(
+                pd.DataFrame(metrics_data), hide_index=True, use_container_width=True
+            )
+
+        with col2:
+            st.markdown("**🎯 Target Distribution**")
+            train_target_dist = st.session_state.y_train.value_counts()
+            test_target_dist = st.session_state.y_test.value_counts()
+
+            dist_data = {
+                "Class": ["No Churn (0)", "Churn (1)"],
+                "Train Count": [
+                    train_target_dist.get(0, 0),
+                    train_target_dist.get(1, 0),
+                ],
+                "Test Count": [test_target_dist.get(0, 0), test_target_dist.get(1, 0)],
+            }
+            st.dataframe(
+                pd.DataFrame(dist_data), hide_index=True, use_container_width=True
+            )
+
+        # Configuration summary
+        if st.session_state.preprocessing_config:
+            st.markdown("**⚙️ Preprocessing Configuration**")
+            config = st.session_state.preprocessing_config
+
+            config_display = {
+                "Parameter": [
+                    "Missing Values Strategy",
+                    "Scaling Method",
+                    "Target Column",
+                    "Test Size",
+                    "Random State",
+                ],
+                "Value": [
+                    config.get("missing_strategy", "N/A"),
+                    config.get("scaling_method", "N/A"),
+                    config.get("target_column", "N/A"),
+                    f"{config.get('test_size', 0) * 100:.0f}%",
+                    config.get("random_state", "N/A"),
+                ],
+            }
+            st.dataframe(
+                pd.DataFrame(config_display), hide_index=True, use_container_width=True
+            )
+
+        # Next step button
+        st.markdown("---")
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button(
+                "➡️ Lanjut ke Model Training", type="primary", use_container_width=True
+            ):
+                st.switch_page("pages/Test_Data.py")
 
     else:
-        if st.session_state.data is None:
-            st.warning("Silakan input data terlebih dahulu.")
-        else:
-            st.warning("Silakan lakukan Preprocessing di tab sebelumnya terlebih dahulu.")
+        st.info(
+            "🔧 Silakan lakukan preprocessing terlebih dahulu di tab **Preprocessing Options**."
+        )
+
+# Warning jika data belum diproses
+if st.session_state.data_processed is None:
+    st.markdown("---")
+    st.info(
+        "💡 **Tips**: Lakukan preprocessing data terlebih dahulu sebelum melanjutkan ke tahap training model."
+    )
