@@ -7,7 +7,6 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 from style import inject_global_style, render_sidebar
 
-# Konfigurasi Halaman
 st.set_page_config(
     page_title="Preprocessing Data - PREDICTEL", page_icon="⚙️", layout="wide"
 )
@@ -15,7 +14,6 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Processing Data")
 
-# Inisialisasi Session State
 if "data" not in st.session_state:
     st.session_state.data = None
 if "data_processed" not in st.session_state:
@@ -33,7 +31,6 @@ if "scaler" not in st.session_state:
 if "preprocessing_config" not in st.session_state:
     st.session_state.preprocessing_config = {}
 
-# Header
 st.markdown(
     """
     <div class="step-header">
@@ -49,14 +46,12 @@ st.markdown(
 
 st.title("⚙️ Data Preprocessing")
 
-# Cek data tersedia
 if st.session_state.data is None:
     st.warning(
         "⚠️ Data belum tersedia. Silakan upload dataset di halaman **Input Data** terlebih dahulu."
     )
     st.stop()
 
-# Tampilan Data Asli
 st.subheader("📋 Dataset Overview")
 with st.expander("🔍 Lihat Data Asli", expanded=False):
     st.dataframe(st.session_state.data, height=300, use_container_width=True)
@@ -72,12 +67,10 @@ with st.expander("🔍 Lihat Data Asli", expanded=False):
 
 st.markdown("---")
 
-# Tabs untuk Preprocessing
 tab1, tab2, tab3 = st.tabs(
     ["🔧 Data Analysis", "⚙️ Preprocessing Options", "✂️ Train/Test Split"]
 )
 
-# ============== TAB 1: DATA ANALYSIS ==============
 with tab1:
     st.subheader("📊 Data Quality Analysis")
 
@@ -87,7 +80,6 @@ with tab1:
 
     with col1:
         st.markdown("**🔍 Missing Values Analysis**")
-        # Missing values analysis
         missing_data = df.isnull().sum()
         missing_df = pd.DataFrame(
             {
@@ -103,7 +95,6 @@ with tab1:
         else:
             st.success("✅ No missing values detected!")
 
-        # Handle TotalCharges special case (blank spaces)
         if "TotalCharges" in df.columns:
             blank_count = (df["TotalCharges"] == " ").sum()
             if blank_count > 0:
@@ -122,7 +113,6 @@ with tab1:
         )
         st.dataframe(dtype_info, hide_index=True, use_container_width=True)
 
-    # Statistical Summary
     st.markdown("**📈 Numerical Features Summary**")
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     if len(numeric_cols) > 0:
@@ -130,11 +120,9 @@ with tab1:
     else:
         st.info("Tidak ada kolom numerik yang terdeteksi.")
 
-# ============== TAB 2: PREPROCESSING OPTIONS ==============
 with tab2:
     st.subheader("⚙️ Preprocessing Configuration")
 
-    # Configuration Form
     with st.form("preprocessing_config_form"):
         col1, col2 = st.columns(2)
 
@@ -185,7 +173,6 @@ with tab2:
                 value=42,
             )
 
-        # Submit Button
         submitted = st.form_submit_button(
             "🚀 Run Preprocessing",
             type="primary",
@@ -196,11 +183,9 @@ with tab2:
         if submitted:
             with st.status("🔄 Processing data...", expanded=True) as status:
                 try:
-                    # 1. Copy data
                     df_clean = st.session_state.data.copy()
                     st.write("✅ Copying dataset...")
 
-                    # 2. Remove irrelevant columns
                     columns_to_drop = (
                         ["customerID"] if "customerID" in df_clean.columns else []
                     )
@@ -208,21 +193,16 @@ with tab2:
                         df_clean = df_clean.drop(columns=columns_to_drop)
                         st.write(f"✅ Removing columns: {columns_to_drop}")
 
-                    # 3. Handle TotalCharges special case (blank spaces)
                     if "TotalCharges" in df_clean.columns:
-                        # Replace blank spaces with NaN
                         df_clean["TotalCharges"] = df_clean["TotalCharges"].replace(
                             " ", np.nan
                         )
-                        # Convert to numeric
                         df_clean["TotalCharges"] = pd.to_numeric(
                             df_clean["TotalCharges"], errors="coerce"
                         )
                         st.write("✅ Fixed TotalCharges column...")
 
-                    # 4. Separate features and target
                     if target_column in df_clean.columns:
-                        # Encode target variable
                         if df_clean[target_column].dtype == "object":
                             df_clean[target_column] = df_clean[target_column].map(
                                 {"Yes": 1, "No": 0}
@@ -235,14 +215,11 @@ with tab2:
                         st.error(f"Target column '{target_column}' not found!")
                         st.stop()
 
-                    # 5. Handle missing values
                     numeric_features = X.select_dtypes(include=[np.number]).columns
                     categorical_features = X.select_dtypes(include=["object"]).columns
 
-                    # For numeric features
                     if len(numeric_features) > 0:
                         if missing_strategy == "most_frequent":
-                            # Use median for numeric when most_frequent is selected
                             imputer_num = SimpleImputer(strategy="median")
                         else:
                             imputer_num = SimpleImputer(strategy=missing_strategy)
@@ -254,7 +231,6 @@ with tab2:
                             f"✅ Handling missing values (numeric): {missing_strategy}"
                         )
 
-                    # For categorical features
                     if len(categorical_features) > 0:
                         imputer_cat = SimpleImputer(strategy="most_frequent")
                         X[categorical_features] = imputer_cat.fit_transform(
@@ -264,7 +240,6 @@ with tab2:
                             "✅ Handling missing values (categorical): most_frequent"
                         )
 
-                    # 6. Encode categorical variables
                     if len(categorical_features) > 0:
                         label_encoders = {}
                         for col in categorical_features:
@@ -275,7 +250,6 @@ with tab2:
                             f"✅ Label encoding for {len(categorical_features)} categorical columns"
                         )
 
-                    # 7. Feature Scaling
                     scaler = None
                     if scaling_method == "StandardScaler":
                         from sklearn.preprocessing import StandardScaler
@@ -298,13 +272,11 @@ with tab2:
                     else:
                         st.write("✅ No scaling applied")
 
-                    # 8. Train/Test Split
                     X_train, X_test, y_train, y_test = train_test_split(
                         X, y, test_size=test_size, random_state=random_state, stratify=y
                     )
                     st.write(f"✅ Data split: {len(X_train)} train, {len(X_test)} test")
 
-                    # Save to session state
                     st.session_state.data_processed = pd.concat([X, y], axis=1)
                     st.session_state.X_train = X_train
                     st.session_state.X_test = X_test
@@ -331,7 +303,6 @@ with tab2:
                         label="❌ Preprocessing failed!", state="error", expanded=False
                     )
 
-    # Show preprocessing results
     if st.session_state.data_processed is not None:
         st.markdown("---")
         st.subheader("✅ Preprocessing Results")
@@ -344,7 +315,6 @@ with tab2:
         with col3:
             st.metric("Test Samples", st.session_state.X_test.shape[0])
 
-        # Show sample of processed data
         with st.expander("🔍 Preview Processed Data", expanded=False):
             st.markdown("**Training Features (X_train) - First 5 rows:**")
             st.dataframe(st.session_state.X_train.head(), use_container_width=True)
@@ -352,12 +322,10 @@ with tab2:
             st.markdown("**Training Target (y_train) - First 10 values:**")
             st.write(st.session_state.y_train.head(10).tolist())
 
-# ============== TAB 3: TRAIN/TEST SPLIT INFO ==============
 with tab3:
     st.subheader("✂️ Data Split Information")
 
     if st.session_state.X_train is not None:
-        # Split statistics
         col1, col2 = st.columns(2)
 
         with col1:
@@ -396,7 +364,6 @@ with tab3:
                 pd.DataFrame(dist_data), hide_index=True, use_container_width=True
             )
 
-        # Configuration summary
         if st.session_state.preprocessing_config:
             st.markdown("**⚙️ Preprocessing Configuration**")
             config = st.session_state.preprocessing_config
@@ -421,7 +388,6 @@ with tab3:
                 pd.DataFrame(config_display), hide_index=True, use_container_width=True
             )
 
-        # Next step button
         st.markdown("---")
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
@@ -435,7 +401,6 @@ with tab3:
             "🔧 Silakan lakukan preprocessing terlebih dahulu di tab **Preprocessing Options**."
         )
 
-# Warning jika data belum diproses
 if st.session_state.data_processed is None:
     st.markdown("---")
     st.info(

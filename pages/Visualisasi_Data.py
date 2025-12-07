@@ -3,10 +3,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Try to import seaborn with fallback
 try:
     import seaborn as sns
-
     SEABORN_AVAILABLE = True
 except ImportError:
     SEABORN_AVAILABLE = False
@@ -17,12 +15,10 @@ except ImportError:
 
 from style import inject_global_style, render_sidebar
 
-# Try to import plotly with fallback
 try:
     import plotly.express as px
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
@@ -30,7 +26,6 @@ except ImportError:
         "⚠️ Plotly not installed. Using matplotlib for visualizations. Install with: pip install plotly"
     )
 
-# Set matplotlib style for dark theme with error handling
 try:
     plt.style.use("dark_background")
     plt.rcParams["figure.facecolor"] = "#1a1a1a"
@@ -40,11 +35,9 @@ try:
     plt.rcParams["xtick.color"] = "white"
     plt.rcParams["ytick.color"] = "white"
 except Exception:
-    # Fallback to default style if dark_background not available
     plt.rcParams["figure.facecolor"] = "#ffffff"
     plt.rcParams["axes.facecolor"] = "#ffffff"
 
-# Konfigurasi Halaman
 st.set_page_config(
     page_title="Data Visualization - PREDICTEL", page_icon="📊", layout="wide"
 )
@@ -52,7 +45,6 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Data Visualization")
 
-# Header
 st.markdown(
     """
     <div class="step-header">
@@ -68,7 +60,6 @@ st.markdown(
 
 st.title("📊 Data Visualization & Analytics")
 
-# Cek data tersedia
 if "data" not in st.session_state or st.session_state.data is None:
     st.warning(
         "⚠️ Data belum tersedia. Silakan upload dataset di halaman **Input Data** terlebih dahulu."
@@ -77,7 +68,6 @@ if "data" not in st.session_state or st.session_state.data is None:
 
 df = st.session_state.data.copy()
 
-# Data overview metrics
 st.subheader("📋 Dataset Overview")
 col1, col2, col3, col4 = st.columns(4)
 
@@ -95,7 +85,6 @@ with col4:
 
 st.markdown("---")
 
-# Tabs untuk berbagai jenis visualisasi
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "🎯 Churn Analysis",
@@ -105,11 +94,9 @@ tab1, tab2, tab3, tab4 = st.tabs(
     ]
 )
 
-# ============== TAB 1: CHURN ANALYSIS ==============
 with tab1:
     st.subheader("🎯 Customer Churn Analysis")
 
-    # Churn overview
     col1, col2 = st.columns(2)
 
     with col1:
@@ -119,7 +106,6 @@ with tab1:
             churn_counts = df["Churn"].value_counts()
 
             if PLOTLY_AVAILABLE:
-                # Interactive pie chart dengan plotly
                 fig_pie = go.Figure(
                     data=[
                         go.Pie(
@@ -145,7 +131,6 @@ with tab1:
 
                 st.plotly_chart(fig_pie, use_container_width=True)
             else:
-                # Fallback matplotlib pie chart
                 fig, ax = plt.subplots(figsize=(8, 6))
                 colors = ["#10b981", "#ef4444"]
                 wedges, texts, autotexts = ax.pie(
@@ -163,7 +148,6 @@ with tab1:
     with col2:
         st.markdown("**Churn by Customer Demographics**")
 
-        # Demographic selector
         demographic_cols = ["gender", "SeniorCitizen", "Partner", "Dependents"]
         available_demographics = [col for col in demographic_cols if col in df.columns]
 
@@ -175,7 +159,6 @@ with tab1:
             )
 
             if selected_demo in df.columns and "Churn" in df.columns:
-                # Create grouped bar chart
                 demo_churn = pd.crosstab(df[selected_demo], df["Churn"])
 
                 if PLOTLY_AVAILABLE:
@@ -210,7 +193,6 @@ with tab1:
 
                     st.plotly_chart(fig_bar, use_container_width=True)
                 else:
-                    # Fallback matplotlib bar chart
                     fig, ax = plt.subplots(figsize=(10, 6))
                     demo_churn.plot(kind="bar", ax=ax, color=["#10b981", "#ef4444"])
                     ax.set_title(
@@ -224,14 +206,12 @@ with tab1:
                     plt.xticks(rotation=45)
                     st.pyplot(fig)
 
-    # Service analysis
     st.markdown("---")
     st.markdown("**Churn by Service Categories**")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Contract analysis
         if "Contract" in df.columns and "Churn" in df.columns:
             st.markdown("**Contract Type Analysis**")
 
@@ -261,7 +241,6 @@ with tab1:
 
                 st.plotly_chart(fig_contract, use_container_width=True)
             else:
-                # Fallback matplotlib bar chart
                 fig, ax = plt.subplots(figsize=(8, 5))
                 bars = ax.bar(
                     contract_churn["Contract"],
@@ -277,7 +256,6 @@ with tab1:
                 st.pyplot(fig)
 
     with col2:
-        # Internet service analysis
         if "InternetService" in df.columns and "Churn" in df.columns:
             st.markdown("**Internet Service Analysis**")
 
@@ -307,7 +285,6 @@ with tab1:
 
                 st.plotly_chart(fig_internet, use_container_width=True)
             else:
-                # Fallback matplotlib bar chart
                 fig, ax = plt.subplots(figsize=(8, 5))
                 bars = ax.bar(
                     internet_churn["InternetService"],
@@ -322,18 +299,15 @@ with tab1:
                 plt.xticks(rotation=45)
                 st.pyplot(fig)
 
-# ============== TAB 2: CUSTOMER SEGMENTS ==============
 with tab2:
     st.subheader("📈 Customer Segmentation Analysis")
 
-    # Tenure analysis
     if "tenure" in df.columns and "Churn" in df.columns:
         col1, col2 = st.columns(2)
 
         with col1:
             st.markdown("**Customer Tenure Distribution**")
 
-            # Create tenure bins
             df["tenure_group"] = pd.cut(
                 df["tenure"],
                 bins=[0, 12, 24, 36, 48, 100],
@@ -375,7 +349,6 @@ with tab2:
 
                 st.plotly_chart(fig_tenure, use_container_width=True)
             else:
-                # Fallback matplotlib line chart
                 fig, ax = plt.subplots(figsize=(10, 6))
                 ax.plot(
                     tenure_churn["tenure_group"],
@@ -398,7 +371,6 @@ with tab2:
         with col2:
             st.markdown("**Tenure vs Monthly Charges**")
 
-            # Scatter plot
             if "MonthlyCharges" in df.columns:
                 if PLOTLY_AVAILABLE:
                     fig_scatter = px.scatter(
@@ -420,7 +392,6 @@ with tab2:
 
                     st.plotly_chart(fig_scatter, use_container_width=True)
                 else:
-                    # Fallback matplotlib scatter plot
                     fig, ax = plt.subplots(figsize=(10, 6))
                     for churn_val, color in zip(["No", "Yes"], ["#10b981", "#ef4444"]):
                         mask = df["Churn"] == churn_val
@@ -442,7 +413,6 @@ with tab2:
                     ax.grid(True, alpha=0.3)
                     st.pyplot(fig)
 
-    # Payment method analysis
     st.markdown("---")
     st.markdown("**Payment Method & Service Preferences**")
 
@@ -480,7 +450,6 @@ with tab2:
 
                 st.plotly_chart(fig_payment, use_container_width=True)
             else:
-                # Fallback matplotlib horizontal bar chart
                 fig, ax = plt.subplots(figsize=(10, 6))
                 bars = ax.barh(
                     payment_churn["PaymentMethod"],
@@ -495,7 +464,6 @@ with tab2:
                 st.pyplot(fig)
 
     with col2:
-        # Service combinations
         service_cols = [
             "PhoneService",
             "MultipleLines",
@@ -532,7 +500,6 @@ with tab2:
 
                 st.plotly_chart(fig_service, use_container_width=True)
             else:
-                # Fallback matplotlib pie chart
                 fig, ax = plt.subplots(figsize=(8, 6))
                 service_counts = df[selected_service].value_counts()
                 ax.pie(
@@ -546,7 +513,6 @@ with tab2:
                 )
                 st.pyplot(fig)
 
-# ============== TAB 3: REVENUE ANALYSIS ==============
 with tab3:
     st.subheader("💰 Revenue & Financial Analysis")
 
@@ -556,7 +522,6 @@ with tab3:
         with col1:
             st.markdown("**Monthly Charges Distribution**")
 
-            # Convert TotalCharges to numeric if it's string
             df["TotalCharges_numeric"] = pd.to_numeric(
                 df["TotalCharges"], errors="coerce"
             )
@@ -584,7 +549,6 @@ with tab3:
 
                 st.plotly_chart(fig_monthly, use_container_width=True)
             else:
-                # Fallback matplotlib histogram
                 fig, ax = plt.subplots(figsize=(10, 6))
                 for churn_val, color in zip(["No", "Yes"], ["#10b981", "#ef4444"]):
                     mask = df["Churn"] == churn_val
@@ -631,7 +595,6 @@ with tab3:
 
                 st.plotly_chart(fig_total, use_container_width=True)
             else:
-                # Fallback matplotlib histogram
                 fig, ax = plt.subplots(figsize=(10, 6))
                 for churn_val, color in zip(["No", "Yes"], ["#10b981", "#ef4444"]):
                     mask = df["Churn"] == churn_val
@@ -653,14 +616,12 @@ with tab3:
                 ax.grid(True, alpha=0.3)
                 st.pyplot(fig)
 
-        # Revenue impact analysis
         st.markdown("---")
         st.markdown("**Revenue Impact Analysis**")
 
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            # Calculate revenue metrics
             if "Churn" in df.columns:
                 churned_revenue = df[df["Churn"] == "Yes"]["MonthlyCharges"].sum()
                 total_revenue = df["MonthlyCharges"].sum()
@@ -675,7 +636,6 @@ with tab3:
                 )
 
         with col2:
-            # Average revenue per customer
             avg_monthly_loyal = (
                 df[df["Churn"] == "No"]["MonthlyCharges"].mean()
                 if "Churn" in df.columns
@@ -696,7 +656,6 @@ with tab3:
             )
 
         with col3:
-            # Customer lifetime value impact
             if "tenure" in df.columns:
                 avg_tenure_loyal = (
                     df[df["Churn"] == "No"]["tenure"].mean()
@@ -720,11 +679,9 @@ with tab3:
                     delta=f"{clv_churn - clv_loyal:+,.0f}",
                 )
 
-# ============== TAB 4: FEATURE CORRELATION ==============
 with tab4:
     st.subheader("🔗 Feature Correlation & Relationships")
 
-    # Prepare numeric data for correlation
     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 
     if len(numeric_cols) > 1:
@@ -733,11 +690,9 @@ with tab4:
         with col1:
             st.markdown("**Feature Correlation Matrix**")
 
-            # Calculate correlation matrix
             corr_matrix = df[numeric_cols].corr()
 
             if PLOTLY_AVAILABLE:
-                # Create correlation heatmap
                 fig_corr = px.imshow(
                     corr_matrix,
                     text_auto=".2f",
@@ -750,7 +705,6 @@ with tab4:
 
                 st.plotly_chart(fig_corr, use_container_width=True)
             else:
-                # Fallback matplotlib heatmap
                 fig, ax = plt.subplots(figsize=(12, 8))
                 try:
                     im = ax.imshow(corr_matrix, cmap="RdBu", aspect="auto")
@@ -759,7 +713,6 @@ with tab4:
                     ax.set_xticklabels(corr_matrix.columns, rotation=45, ha="right")
                     ax.set_yticklabels(corr_matrix.columns)
 
-                    # Add correlation values as text
                     for i in range(len(corr_matrix.columns)):
                         for j in range(len(corr_matrix.columns)):
                             corr_val = corr_matrix.iloc[i, j]
@@ -778,7 +731,6 @@ with tab4:
                     )
                     plt.colorbar(im)
                 except Exception as e:
-                    # Simple fallback if heatmap fails
                     ax.text(
                         0.5,
                         0.5,
@@ -792,7 +744,6 @@ with tab4:
         with col2:
             st.markdown("**Feature Relationships**")
 
-            # Interactive feature selector
             feature_x = st.selectbox(
                 "Select X-axis feature:", numeric_cols, key="corr_x"
             )
@@ -819,7 +770,6 @@ with tab4:
 
                     st.plotly_chart(fig_relationship, use_container_width=True)
                 else:
-                    # Fallback matplotlib scatter plot
                     fig, ax = plt.subplots(figsize=(10, 6))
                     if "Churn" in df.columns:
                         for churn_val, color in zip(
@@ -847,13 +797,11 @@ with tab4:
                     ax.grid(True, alpha=0.3)
                     st.pyplot(fig)
 
-                # Show correlation coefficient
                 correlation = df[feature_x].corr(df[feature_y])
                 st.metric(
                     f"Correlation ({feature_x} vs {feature_y})", f"{correlation:.3f}"
                 )
 
-    # Feature importance (if model is available)
     if "model" in st.session_state and st.session_state.model is not None:
         st.markdown("---")
         st.markdown("**Model Feature Importance**")
@@ -872,7 +820,7 @@ with tab4:
 
             if PLOTLY_AVAILABLE:
                 fig_importance = px.bar(
-                    importance_df.tail(10),  # Top 10 features
+                    importance_df.tail(10),
                     y="Feature",
                     x="Importance",
                     orientation="h",
@@ -890,7 +838,6 @@ with tab4:
 
                 st.plotly_chart(fig_importance, use_container_width=True)
             else:
-                # Fallback matplotlib horizontal bar chart
                 fig, ax = plt.subplots(figsize=(10, 8))
                 top_features = importance_df.tail(10)
                 colors = [
@@ -911,14 +858,12 @@ with tab4:
                 ax.grid(True, alpha=0.3)
                 st.pyplot(fig)
 
-    # Data quality overview
     st.markdown("---")
     st.markdown("**Data Quality Overview**")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Missing values heatmap
         missing_data = df.isnull().sum()
         missing_df = pd.DataFrame(
             {
@@ -949,7 +894,6 @@ with tab4:
 
                 st.plotly_chart(fig_missing, use_container_width=True)
             else:
-                # Fallback matplotlib bar chart
                 fig, ax = plt.subplots(figsize=(10, 6))
                 bars = ax.bar(
                     missing_df["Column"],
@@ -966,7 +910,6 @@ with tab4:
             st.success("✅ No missing values detected!")
 
     with col2:
-        # Data types distribution
         dtype_counts = df.dtypes.value_counts()
         dtype_df = pd.DataFrame(
             {"Data_Type": dtype_counts.index.astype(str), "Count": dtype_counts.values}
@@ -985,7 +928,6 @@ with tab4:
 
             st.plotly_chart(fig_types, use_container_width=True)
         else:
-            # Fallback matplotlib pie chart
             fig, ax = plt.subplots(figsize=(8, 6))
             ax.pie(
                 dtype_df["Count"],
@@ -996,7 +938,6 @@ with tab4:
             ax.set_title("Data Types Distribution", fontsize=14, fontweight="bold")
             st.pyplot(fig)
 
-# Summary insights
 st.markdown("---")
 st.subheader("💡 Key Insights Summary")
 
@@ -1044,7 +985,6 @@ with col2:
     for rec in recommendations:
         st.write(rec)
 
-# Footer
 st.markdown("---")
 st.markdown(
     """

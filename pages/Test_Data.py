@@ -3,10 +3,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Try to import optional libraries
 try:
     import seaborn as sns
-
     SEABORN_AVAILABLE = True
 except ImportError:
     SEABORN_AVAILABLE = False
@@ -15,14 +13,12 @@ except ImportError:
 try:
     import plotly.express as px
     import plotly.graph_objects as go
-
     PLOTLY_AVAILABLE = True
 except ImportError:
     PLOTLY_AVAILABLE = False
     px = None
     go = None
 
-# Set matplotlib style for dark theme
 try:
     plt.style.use("dark_background")
     plt.rcParams["figure.facecolor"] = "#1a1a1a"
@@ -50,7 +46,6 @@ from sklearn.metrics import (
 
 from style import inject_global_style, render_sidebar
 
-# Page configuration
 st.set_page_config(
     page_title="Model Training & Testing - PREDICTEL", page_icon="🧪", layout="wide"
 )
@@ -58,7 +53,6 @@ st.set_page_config(
 inject_global_style()
 render_sidebar("Test Data")
 
-# Header
 st.markdown(
     """
     <div class="step-header">
@@ -74,7 +68,6 @@ st.markdown(
 
 st.title("🧪 Model Training & Testing")
 
-# Check prerequisites
 if (
     "X_train" not in st.session_state
     or st.session_state.X_train is None
@@ -85,28 +78,23 @@ if (
     )
     st.stop()
 
-# Initialize session state for model
 if "model" not in st.session_state:
     st.session_state.model = None
 if "model_metrics" not in st.session_state:
     st.session_state.model_metrics = {}
 
-# Tabs for different functions
 tab1, tab2, tab3 = st.tabs(
     ["⚙️ Model Training", "📊 Performance Evaluation", "🎯 Individual Prediction"]
 )
 
-# ============== TAB 1: MODEL TRAINING ==============
 with tab1:
     st.subheader("🚀 Logistic Regression Training")
 
-    # Model configuration
     col1, col2 = st.columns([2, 1])
 
     with col1:
         st.markdown("**🔧 Model Configuration**")
 
-        # Hyperparameters
         with st.expander("⚙️ Hyperparameter Settings", expanded=True):
             col_hyper1, col_hyper2 = st.columns(2)
 
@@ -146,7 +134,6 @@ with tab1:
     with col2:
         st.markdown("**📊 Dataset Info**")
 
-        # Dataset metrics
         train_samples = st.session_state.X_train.shape[0]
         test_samples = st.session_state.X_test.shape[0]
         n_features = st.session_state.X_train.shape[1]
@@ -155,12 +142,10 @@ with tab1:
         st.metric("Test Samples", f"{test_samples:,}")
         st.metric("Features", n_features)
 
-        # Class distribution
         class_dist = st.session_state.y_train.value_counts()
         churn_pct = class_dist.get(1, 0) / len(st.session_state.y_train) * 100
         st.metric("Churn Rate", f"{churn_pct:.1f}%")
 
-    # Training button
     st.markdown("---")
 
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
@@ -172,7 +157,6 @@ with tab1:
         ):
             with st.status("🔄 Training model...", expanded=True) as status:
                 try:
-                    # Initialize and train model
                     model = LogisticRegression(
                         max_iter=max_iter, random_state=random_state, solver=solver, C=C
                     )
@@ -181,12 +165,10 @@ with tab1:
                     model.fit(st.session_state.X_train, st.session_state.y_train)
                     st.write("✅ Model training completed...")
 
-                    # Make predictions
                     y_pred = model.predict(st.session_state.X_test)
                     y_pred_proba = model.predict_proba(st.session_state.X_test)[:, 1]
                     st.write("✅ Predictions generated...")
 
-                    # Calculate metrics
                     accuracy = accuracy_score(st.session_state.y_test, y_pred)
                     precision = precision_score(st.session_state.y_test, y_pred)
                     recall = recall_score(st.session_state.y_test, y_pred)
@@ -194,7 +176,6 @@ with tab1:
                     auc_roc = roc_auc_score(st.session_state.y_test, y_pred_proba)
                     st.write("✅ Performance metrics calculated...")
 
-                    # Save to session state
                     st.session_state.model = model
                     st.session_state.model_metrics = {
                         "accuracy": accuracy,
@@ -218,14 +199,12 @@ with tab1:
                         label="❌ Training failed!", state="error", expanded=False
                     )
 
-    # Show model results if available
     if st.session_state.model is not None:
         st.markdown("---")
         st.subheader("✅ Training Results")
 
         metrics = st.session_state.model_metrics
 
-        # Key metrics
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
             st.metric("Accuracy", f"{metrics['accuracy']:.3f}")
@@ -238,7 +217,6 @@ with tab1:
         with col5:
             st.metric("ROC AUC", f"{metrics['roc_auc']:.3f}")
 
-        # Model coefficients
         with st.expander("📋 Model Coefficients (Feature Importance)", expanded=False):
             feature_names = st.session_state.X_train.columns
             coefficients = st.session_state.model.coef_[0]
@@ -253,7 +231,6 @@ with tab1:
 
             st.dataframe(coef_df, use_container_width=True, hide_index=True)
 
-# ============== TAB 2: PERFORMANCE EVALUATION ==============
 with tab2:
     st.subheader("📊 Model Performance Analysis")
 
@@ -265,12 +242,10 @@ with tab2:
         y_pred = metrics["y_pred"]
         y_pred_proba = metrics["y_pred_proba"]
 
-        # Performance overview
         st.markdown("### 🎯 Performance Overview")
         col1, col2 = st.columns(2)
 
         with col1:
-            # Confusion Matrix
             st.markdown("**Confusion Matrix**")
             cm = confusion_matrix(y_test, y_pred)
 
@@ -298,7 +273,6 @@ with tab2:
 
                 st.plotly_chart(fig_cm, use_container_width=True)
             else:
-                # Fallback matplotlib confusion matrix
                 fig, ax = plt.subplots(figsize=(8, 6))
                 if SEABORN_AVAILABLE:
                     sns.heatmap(
@@ -311,14 +285,12 @@ with tab2:
                         yticklabels=["Actual No Churn", "Actual Churn"],
                     )
                 else:
-                    # Pure matplotlib heatmap
                     im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
                     ax.set_xticks(range(2))
                     ax.set_yticks(range(2))
                     ax.set_xticklabels(["Predicted No Churn", "Predicted Churn"])
                     ax.set_yticklabels(["Actual No Churn", "Actual Churn"])
 
-                    # Add text annotations
                     thresh = cm.max() / 2.0
                     for i in range(2):
                         for j in range(2):
@@ -337,10 +309,8 @@ with tab2:
                 st.pyplot(fig)
 
         with col2:
-            # Classification Report
             st.markdown("**Classification Metrics**")
 
-            # Calculate per-class metrics
             tn, fp, fn, tp = cm.ravel()
 
             metrics_data = {
@@ -363,13 +333,11 @@ with tab2:
                 pd.DataFrame(metrics_data), use_container_width=True, hide_index=True
             )
 
-        # ROC and Precision-Recall Curves
         st.markdown("### 📈 Model Performance Curves")
 
         col1, col2 = st.columns(2)
 
         with col1:
-            # ROC Curve
             fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
 
             if PLOTLY_AVAILABLE:
@@ -403,7 +371,6 @@ with tab2:
 
                 st.plotly_chart(fig_roc, use_container_width=True)
             else:
-                # Fallback matplotlib ROC curve
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.plot(
                     fpr,
@@ -427,7 +394,6 @@ with tab2:
                 st.pyplot(fig)
 
         with col2:
-            # Precision-Recall Curve
             precision_curve, recall_curve, _ = precision_recall_curve(
                 y_test, y_pred_proba
             )
@@ -444,7 +410,6 @@ with tab2:
                     )
                 )
 
-                # Add baseline
                 baseline = y_test.mean()
                 fig_pr.add_hline(
                     y=baseline,
@@ -463,7 +428,6 @@ with tab2:
 
                 st.plotly_chart(fig_pr, use_container_width=True)
             else:
-                # Fallback matplotlib precision-recall curve
                 fig, ax = plt.subplots(figsize=(8, 6))
                 ax.plot(
                     recall_curve,
@@ -488,7 +452,6 @@ with tab2:
                 ax.grid(True, alpha=0.3)
                 st.pyplot(fig)
 
-# ============== TAB 3: INDIVIDUAL PREDICTION ==============
 with tab3:
     st.subheader("🎯 Individual Customer Prediction")
 
@@ -497,19 +460,15 @@ with tab3:
     else:
         st.markdown("Enter customer details below to predict churn probability:")
 
-        # Prediction form
         with st.form("individual_prediction_form_clean"):
             col1, col2, col3 = st.columns(3)
 
-            # Get feature names and create input fields
             feature_names = st.session_state.X_train.columns.tolist()
             input_values = {}
 
-            # Create input fields for each feature
             with col1:
                 st.markdown("**Account Information**")
 
-                # Tenure slider with clear value display
                 col_slider, col_value = st.columns([3, 1])
                 with col_slider:
                     input_values["tenure"] = st.slider(
@@ -530,7 +489,6 @@ with tab3:
                     "Total Charges ($)", 0.0, 10000.0, 1500.0, step=10.0
                 )
 
-                # Summary box
                 st.markdown("---")
                 st.markdown("**Summary:**")
                 st.write(f"📅 Tenure: **{input_values['tenure']} months**")
@@ -540,7 +498,10 @@ with tab3:
             with col2:
                 st.markdown("**Demographics**")
                 input_values["senior_citizen"] = st.selectbox(
-                    "Senior Citizen", [0, 1], index=0
+                    "Senior Citizen",
+                    [0, 1],
+                    index=0,
+                    format_func=lambda x: "No (0)" if x == 0 else "Yes (1)",
                 )
                 input_values["gender"] = st.selectbox(
                     "Gender",
@@ -571,7 +532,14 @@ with tab3:
                     format_func=lambda x: ["Month-to-Month", "One Year", "Two Year"][x],
                 )
                 input_values["payment_method"] = st.selectbox(
-                    "Payment Method", [0, 1, 2, 3]
+                    "Payment Method",
+                    [0, 1, 2, 3],
+                    format_func=lambda x: [
+                        "Electronic Check (0)",
+                        "Mailed Check (1)",
+                        "Bank Transfer (2)",
+                        "Credit Card (3)",
+                    ][x],
                 )
                 input_values["paperless_billing"] = st.selectbox(
                     "Paperless Billing",
@@ -588,17 +556,13 @@ with tab3:
 
             if submitted:
                 try:
-                    # Get exact feature count from training data
                     n_features = st.session_state.X_train.shape[1]
 
-                    # Create input array with exact same structure
                     input_array = np.zeros((1, n_features))
 
-                    # Fill with mean values from training data first
                     for i in range(n_features):
                         input_array[0, i] = st.session_state.X_train.iloc[:, i].mean()
 
-                    # Override with user inputs where available
                     feature_mapping = {
                         "tenure": input_values.get("tenure", 12),
                         "monthly_charges": input_values.get("monthly_charges", 65.0),
@@ -613,7 +577,6 @@ with tab3:
                         "paperless_billing": input_values.get("paperless_billing", 0),
                     }
 
-                    # Map features to array positions (first few positions)
                     if n_features >= 3:
                         input_array[0, 0] = feature_mapping["tenure"]
                         input_array[0, 1] = feature_mapping["monthly_charges"]
@@ -633,16 +596,13 @@ with tab3:
                     if n_features >= 11:
                         input_array[0, 10] = feature_mapping["paperless_billing"]
 
-                    # Make prediction
                     prediction = st.session_state.model.predict(input_array)[0]
                     probability = st.session_state.model.predict_proba(input_array)[0]
                     churn_prob = probability[1]
 
-                    # Display results
                     st.markdown("---")
                     st.markdown("### 🎯 Prediction Result")
 
-                    # Result card
                     if churn_prob > 0.5:
                         result_class = "prediction-result-churn"
                         result_text = "HIGH RISK CHURN"
@@ -654,7 +614,6 @@ with tab3:
                         result_desc = "✅ This customer is likely to remain loyal. Continue providing excellent service."
                         prob_color = "#10b981"
 
-                    # Modern result display
                     st.markdown(
                         f"""
                         <div class="prediction-card">
@@ -665,11 +624,9 @@ with tab3:
                         unsafe_allow_html=True,
                     )
 
-                    # Use Streamlit's built-in progress bar
                     st.markdown("#### Churn Probability")
                     progress_bar = st.progress(churn_prob)
 
-                    # Display probability with color coding
                     col1, col2, col3 = st.columns([1, 2, 1])
                     with col2:
                         st.markdown(
@@ -677,7 +634,6 @@ with tab3:
                             unsafe_allow_html=True,
                         )
 
-                    # Additional insights
                     col1, col2 = st.columns(2)
 
                     with col1:
@@ -727,7 +683,6 @@ with tab3:
                     - Try refreshing the page and retraining the model
                     """)
 
-                    # Debug information
                     with st.expander("🔧 Debug Information"):
                         if st.session_state.model is not None:
                             st.write(f"Model type: {type(st.session_state.model)}")

@@ -3,19 +3,16 @@ import streamlit as st
 
 from style import inject_global_style, render_sidebar
 
-# Konfigurasi Halaman
 st.set_page_config(page_title="Input Data - PREDICTEL", page_icon="📂", layout="wide")
 
 inject_global_style()
 render_sidebar("Input Data")
 
-# Inisialisasi Session State
 if "data" not in st.session_state:
     st.session_state.data = None
 if "uploaded_file_name" not in st.session_state:
     st.session_state.uploaded_file_name = None
 
-# Header
 st.markdown(
     """
     <div class="step-header">
@@ -31,35 +28,20 @@ st.markdown(
 
 st.title("📂 Input Data")
 
-# Main upload section
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    # Upload area
-    st.markdown(
-        """
-        <div class="upload-section">
-            <div class="upload-icon">📂</div>
-            <div class="upload-title">Upload Customer Dataset</div>
-            <div class="upload-subtitle">
-                Drag and drop your Telco Customer Churn CSV file here, or click to browse.
-                Supported format: CSV files up to 200MB.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # File uploader
+    st.markdown("### 📂 Upload Customer Dataset")
+    st.markdown("*Drag and drop your CSV file below, or click Browse files*")
+    
     uploaded_file = st.file_uploader(
         "Choose a CSV file",
         type=["csv"],
         accept_multiple_files=False,
-        label_visibility="collapsed",
         help="Upload a CSV file containing customer data with churn information",
     )
 
-    # File format requirements
+
     with st.expander("📋 Dataset Requirements", expanded=False):
         st.markdown("""
         **Required Format:**
@@ -95,20 +77,17 @@ with col1:
         """)
 
 with col2:
-    # Dataset info panel
     st.markdown("### 📊 Dataset Information")
 
     if st.session_state.data is not None:
         df = st.session_state.data
 
-        # Dataset metrics
         col_metric1, col_metric2 = st.columns(2)
         with col_metric1:
             st.metric("Rows", f"{df.shape[0]:,}")
             st.metric("Columns", df.shape[1])
         with col_metric2:
-            # Calculate memory usage
-            memory_usage = df.memory_usage(deep=True).sum() / 1024  # KB
+            memory_usage = df.memory_usage(deep=True).sum() / 1024
             if memory_usage < 1024:
                 memory_str = f"{memory_usage:.1f} KB"
             else:
@@ -116,28 +95,23 @@ with col2:
             st.metric("Memory Usage", memory_str)
             st.metric("File Name", st.session_state.uploaded_file_name or "N/A")
 
-        # Data quality indicators
         st.markdown("**Data Quality:**")
 
-        # Missing values
         missing_count = df.isnull().sum().sum()
         if missing_count == 0:
             st.success("✅ No missing values")
         else:
             st.warning(f"⚠️ {missing_count} missing values detected")
 
-        # Churn column check
         if "Churn" in df.columns:
             st.success("✅ Target column 'Churn' found")
             churn_dist = df["Churn"].value_counts()
             if len(churn_dist) >= 2:
-                # Convert numpy int64 to regular int for better display
                 churn_dict = {k: int(v) for k, v in churn_dist.items()}
                 st.info(f"📊 Churn distribution: {churn_dict}")
         else:
             st.error("❌ 'Churn' column not found")
 
-        # Duplicate check
         duplicates = df.duplicated().sum()
         if duplicates == 0:
             st.success("✅ No duplicate rows")
@@ -145,10 +119,8 @@ with col2:
             st.warning(f"⚠️ {duplicates} duplicate rows found")
 
     else:
-        # Empty state
         st.info("Upload a dataset to see information here")
 
-        # Sample data download
         st.markdown("### 📥 Need Sample Data?")
         st.markdown(
             """
@@ -158,15 +130,11 @@ with col2:
             """
         )
 
-# Process uploaded file
 if uploaded_file is not None:
     try:
-        # Show loading state
         with st.spinner("Processing uploaded file..."):
-            # Read the CSV file
             df = pd.read_csv(uploaded_file)
 
-            # Basic validation
             if df.empty:
                 st.error(
                     "❌ The uploaded file is empty. Please upload a valid CSV file."
@@ -174,14 +142,11 @@ if uploaded_file is not None:
             elif len(df.columns) < 2:
                 st.error("❌ The dataset must have at least 2 columns.")
             else:
-                # Save to session state
                 st.session_state.data = df
                 st.session_state.uploaded_file_name = uploaded_file.name
 
-                # Success message
                 st.success(f"✅ File '{uploaded_file.name}' uploaded successfully!")
 
-                # Auto-rerun to update the UI
                 st.rerun()
 
     except UnicodeDecodeError:
@@ -193,12 +158,10 @@ if uploaded_file is not None:
     except Exception as e:
         st.error(f"❌ An unexpected error occurred: {str(e)}")
 
-# Data preview section
 if st.session_state.data is not None:
     st.markdown("---")
     st.subheader("📋 Dataset Preview & Analysis")
 
-    # Tabs for different views
     tab1, tab2, tab3 = st.tabs(
         ["🔍 Data Preview", "📊 Statistical Summary", "🔧 Data Types"]
     )
@@ -209,7 +172,6 @@ if st.session_state.data is not None:
             st.session_state.data.head(10), use_container_width=True, height=400
         )
 
-        # Quick actions
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -231,7 +193,6 @@ if st.session_state.data is not None:
     with tab2:
         st.markdown("**Statistical Summary:**")
 
-        # Separate numeric and categorical summaries
         numeric_cols = st.session_state.data.select_dtypes(include=["number"]).columns
         categorical_cols = st.session_state.data.select_dtypes(
             include=["object"]
@@ -268,7 +229,6 @@ if st.session_state.data is not None:
     with tab3:
         st.markdown("**Column Information:**")
 
-        # Create comprehensive column info
         column_info = pd.DataFrame(
             {
                 "Column Name": st.session_state.data.columns,
@@ -290,7 +250,6 @@ if st.session_state.data is not None:
 
         st.dataframe(column_info, use_container_width=True, hide_index=True)
 
-        # Data type distribution
         st.markdown("**Data Type Distribution:**")
         dtype_counts = st.session_state.data.dtypes.value_counts()
         col1, col2 = st.columns([1, 2])
@@ -300,17 +259,14 @@ if st.session_state.data is not None:
                 st.metric(f"{dtype}", f"{count} columns")
 
         with col2:
-            # Show columns by type
             for dtype in dtype_counts.index:
                 cols_of_type = st.session_state.data.select_dtypes(
                     include=[dtype]
                 ).columns.tolist()
                 st.write(f"**{dtype}:** {', '.join(cols_of_type)}")
 
-    # Next step action
     st.markdown("---")
 
-    # Validation before proceeding
     can_proceed = True
     issues = []
 
@@ -326,7 +282,6 @@ if st.session_state.data is not None:
         for issue in issues:
             st.write(issue)
 
-    # Action buttons
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
@@ -346,7 +301,6 @@ if st.session_state.data is not None:
                 help="Please resolve the issues above before proceeding",
             )
 
-# Footer tips
 st.markdown("---")
 st.markdown(
     """

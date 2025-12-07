@@ -2,7 +2,6 @@ import streamlit as st
 
 from style import inject_global_style, render_sidebar
 
-# Konfigurasi Halaman
 st.set_page_config(page_title="About Us - PREDICTEL", page_icon="👥", layout="wide")
 
 inject_global_style()
@@ -10,7 +9,6 @@ render_sidebar("About Us")
 
 st.title("👥 About PREDICTEL")
 
-# Team Members Section
 st.markdown("---")
 st.markdown("## 👥 Tim Pengembang")
 
@@ -26,7 +24,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Team members layout
 col1, col2, col3 = st.columns(3, gap="large")
 
 with col1:
@@ -81,7 +78,6 @@ with col3:
     )
 
 
-# Footer
 st.markdown("---")
 st.markdown(
     """
@@ -99,7 +95,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# Call-to-action
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     if st.button(

@@ -132,7 +132,6 @@ with col2:
     - Strategic recommendations
     """)
 
-# Quick Start Guide
 st.markdown("---")
 st.markdown("## 🚀 Quick Start Guide")
 
@@ -182,7 +181,6 @@ with col4:
         """
     )
 
-# Footer Info
 st.markdown("<br><br>", unsafe_allow_html=True)
 st.markdown("---")
 

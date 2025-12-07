@@ -4,11 +4,6 @@ import streamlit as st
 
 
 def inject_global_style() -> None:
-    """Inject global CSS for modern dark theme PREDICTEL design.
-
-    Loads custom CSS with error handling and fallback styling.
-    Ensures consistent dark theme across all pages.
-    """
     try:
         base_dir = Path(__file__).resolve().parent
         css_path = base_dir / "predictel_styles.css"
@@ -16,14 +11,11 @@ def inject_global_style() -> None:
         if css_path.exists():
             css_content = css_path.read_text(encoding="utf-8")
 
-            # Inject CSS with high priority and Streamlit menu hiding
             st.markdown(
                 f"""
                 <style>
-                /* PREDICTEL Modern Dark Theme */
                 {css_content}
 
-                /* Additional critical overrides */
                 .stApp {{
                     background-color: #0a0a0a !important;
                 }}
@@ -32,7 +24,6 @@ def inject_global_style() -> None:
                     background-color: #111111 !important;
                 }}
 
-                /* Enhanced Streamlit UI hiding */
                 #MainMenu,
                 footer,
                 header,
@@ -55,11 +46,9 @@ def inject_global_style() -> None:
                 unsafe_allow_html=True,
             )
         else:
-            # Enhanced fallback styling for dark theme
             st.markdown(
                 """
                 <style>
-                /* Fallback Dark Theme */
                 .stApp {
                     background-color: #0a0a0a !important;
                     color: #ffffff !important;
@@ -88,7 +77,6 @@ def inject_global_style() -> None:
             )
 
     except Exception as e:
-        # Minimal emergency styling with menu hiding
         st.markdown(
             """
             <style>
@@ -102,13 +90,7 @@ def inject_global_style() -> None:
 
 
 def render_sidebar(active_page: str) -> None:
-    """Render modern sidebar dengan navigasi dan branding PREDICTEL.
-
-    Args:
-        active_page: Current active page name for highlighting
-    """
     with st.sidebar:
-        # Brand header with modern styling
         st.markdown(
             """
             <div class="sidebar-brand">
@@ -122,7 +104,6 @@ def render_sidebar(active_page: str) -> None:
             unsafe_allow_html=True,
         )
 
-        # Navigation pages with enhanced structure
         pages = [
             {
                 "label": "Home",
@@ -162,7 +143,6 @@ def render_sidebar(active_page: str) -> None:
             },
         ]
 
-        # Render navigation links
         for item in pages:
             st.page_link(
                 page=item["page"],
@@ -170,7 +150,6 @@ def render_sidebar(active_page: str) -> None:
                 use_container_width=True,
             )
 
-        # Modern footer with version info
         st.markdown(
             """
             <div class='sidebar-footer'>
